@@ -100,6 +100,9 @@ small { color: #70807c; font-weight: 400; }
 
 .calendar-event { width: 100%; height: auto; margin: 0; border-top: 0; border-right: 0; border-bottom: 0; }
 .calendar-event:hover { color: #0c4234; background: #c9eddd; }
+.calendar-day.today { box-shadow: inset 0 3px 0 #137d62; background: #eaf8f1; }
+.calendar-cell.today-cell { background: #f1fbf6; }
+[data-theme="dark"] .calendar-day.today, [data-theme="dark"] .calendar-cell.today-cell { background: #1d382f; }
 .day-appointments button { width: 100%; height: auto; margin: 0; padding: .95rem 0; display: flex; gap: 1rem; text-align: left; border: 0; border-top: 1px solid #e8efec; border-radius: 0; color: #17212b; background: transparent; }
 .day-appointments button:hover { color: #17212b; background: #f3faf6; }
 .route-actions { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: .65rem; }
