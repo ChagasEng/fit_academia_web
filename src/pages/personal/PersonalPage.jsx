@@ -7,7 +7,7 @@ import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import AcademiesPage from './AcademiesPage'
 
 export default function PersonalPage(props) {
-  const path = window.location.pathname
+  const path = props.path || window.location.pathname
   const history = path.match(/^\/personal\/alunos\/(\d+)\/historico$/)
   const page = path === '/personal/alunos/cadastrar' ? <StudentRegistrationPage {...props} />
       : path === '/personal/alunos' ? <StudentListPage {...props} />

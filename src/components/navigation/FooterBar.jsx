@@ -1,11 +1,12 @@
 const icons = { home: '⌂', users: '♙', building: '▦', profile: '◉', activity: '⌁', calendar: '□', chart: '↗' }
 
-export default function FooterBar({ items }) {
+export default function FooterBar({ items, onNavigate }) {
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/'
 
   function navigate(path) {
+    if (onNavigate) return onNavigate(path)
     window.history.pushState({}, '', path)
-    window.dispatchEvent(new PopStateEvent('popstate'))
+    window.dispatchEvent(new Event('popstate'))
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
 

@@ -53,5 +53,5 @@ export default function App() {
   if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <><ThemeToggle /><LoginPage onLogin={handleLogin} /></>
 
   const Page = pages[requestedRole]
-  return <><ThemeToggle /><Page user={session.user} token={session.token} onLogout={handleLogout} />{menu.length > 0 && <FooterBar items={menu} />}</>
+  return <><ThemeToggle /><Page path={path} user={session.user} token={session.token} onLogout={handleLogout} />{menu.length > 0 && <FooterBar items={menu} onNavigate={navigate} />}</>
 }

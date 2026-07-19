@@ -59,13 +59,14 @@ export default function AcademiesPage({ token, onLogout }) {
           <div>
             <p className="eyebrow">MAPA DE ACADEMIAS</p>
             <h1>Academias em {data?.city || 'Ponta Grossa'}</h1>
-            <p>{academies.length} locais encontrados pelo OpenStreetMap.</p>
+            <p>{academies.length} academias com localização cadastrada no OpenStreetMap.</p>
           </div>
           <input type="search" placeholder="Pesquisar academia" value={query} onChange={(event) => setQuery(event.target.value)} />
         </div>
 
         {data?.message && <p className="map-warning">{data.message}</p>}
         {error && <div className="map-warning"><span>{error}</span><button type="button" onClick={load}>Tentar novamente</button></div>}
+        <p className="osm-coverage-note"><strong>Sobre a cobertura:</strong> o mapa mostra apenas estabelecimentos que possuem coordenadas e alguma classificação de academia/fitness no OpenStreetMap. Empresas presentes somente em outras listas públicas não têm uma posição confiável para marcar aqui.</p>
 
         <div className="academy-page-layout">
           <AcademyMap academies={filtered} selectedId={selectedId} onSelect={selectAcademy} />
