@@ -7,7 +7,7 @@ import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import AppointmentBookingSheet from './AppointmentBookingSheet'
 
 const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-const hours = Array.from({ length: 12 }, (_, index) => index + 7)
+const hours = Array.from({ length: 24 }, (_, index) => index)
 const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 const startOfDay = (date) => { const copy = new Date(date); copy.setHours(0, 0, 0, 0); return copy }
 const addDays = (date, days) => { const copy = new Date(date); copy.setDate(copy.getDate() + days); return copy }
