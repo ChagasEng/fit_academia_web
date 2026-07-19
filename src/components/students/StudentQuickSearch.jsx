@@ -6,7 +6,7 @@ export default function StudentQuickSearch({ token }) {
   const [students, setStudents] = useState([])
 
   useEffect(() => {
-    if (query.trim().length < 2) {
+    if (query.trim().length < 1) {
       setStudents([])
       return
     }
