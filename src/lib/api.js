@@ -42,3 +42,10 @@ async function authorizedGet(path, token) {
 export function getStudents(token, page = 1, search = '', type = '') { return authorizedGet(`/personal/alunos?page=${page}&search=${encodeURIComponent(search)}&tipo=${type}`, token) }
 export function getStudent(token, id) { return authorizedGet(`/personal/alunos/${id}`, token) }
 export function getAppointments(token, start, end) { return authorizedGet(`/personal/agenda?inicio=${start}&fim=${end}`, token) }
+
+export async function createAppointment(token, appointment) {
+  const response = await fetch(`${apiUrl}/personal/agenda`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(appointment) })
+  const data = await response.json()
+  if (!response.ok) throw new Error(data.message || 'Não foi possível salvar o agendamento.')
+  return data
+}
