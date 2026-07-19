@@ -10,9 +10,9 @@ export default function FooterBar({ items }) {
   }
 
   return <nav className="footer-bar" aria-label="Menu principal">
-    {items.map((item) => <button key={item.path} className={currentPath === item.path ? 'footer-item active' : 'footer-item'} onClick={() => navigate(item.path)}>
+    {items.map((item) => { const nested = item.path.split('/').filter(Boolean).length > 1 && currentPath.startsWith(`${item.path}/`); return <button key={item.path} className={currentPath === item.path || nested ? 'footer-item active' : 'footer-item'} onClick={() => navigate(item.path)}>
       <span className="footer-icon" aria-hidden="true">{icons[item.icon] || '•'}</span>
       <span>{item.label}</span>
-    </button>)}
+    </button> })}
   </nav>
 }

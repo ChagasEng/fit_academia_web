@@ -4,6 +4,7 @@ export default function StudentDetailsSheet({ student, onClose }) {
   const address = student.addresses?.[0]
   const phone = student.phones?.[0]
   const destination = address && [address.rua, address.numero, address.bairro, address.cidade, address.estado, address.cep].filter(Boolean).join(', ')
+  const nextInstallment = student.contracts?.flatMap((contract) => contract.installments.map((installment) => ({ ...installment, contract }))).filter((installment) => !installment.pago_em).sort((a, b) => a.vencimento_em.localeCompare(b.vencimento_em))[0]
 
   function openRoute(provider) {
     const query = encodeURIComponent(destination)
@@ -12,5 +13,10 @@ export default function StudentDetailsSheet({ student, onClose }) {
   }
   function openHistory() { window.history.pushState({}, '', `/personal/alunos/${student.id}/historico`); window.dispatchEvent(new PopStateEvent('popstate')) }
 
-  return <section className="student-sheet" role="dialog" aria-modal="true" aria-label="Dados do aluno"><div className="day-sheet-header"><div><p className="eyebrow">CADASTRO DO ALUNO</p><h2>{student.nome}</h2></div><button onClick={onClose} aria-label="Fechar dados">×</button></div><dl className="student-details"><div><dt>Tipo</dt><dd><StudentTypeBadge type={student.type} /></dd></div><div><dt>E-mail</dt><dd>{student.email || 'Não informado'}</dd></div><div><dt>Telefone</dt><dd>{phone?.numero || 'Não informado'}</dd></div><div><dt>CEP</dt><dd>{address?.cep || 'Não informado'}</dd></div><div className="full"><dt>Endereço</dt><dd>{destination || 'Não informado'}</dd></div><div className="full"><dt>Complemento / referência</dt><dd>{[address?.complemento, address?.referencia].filter(Boolean).join(' · ') || 'Não informado'}</dd></div></dl><div className="route-actions"><button onClick={openHistory}>Ver histórico e pagamentos</button>{destination && <><button onClick={() => openRoute('maps')}>Ir com Google Maps</button><button onClick={() => openRoute('waze')}>Ir com Waze</button></>}</div></section>
+  return <section className="student-sheet" role="dialog" aria-modal="true" aria-label="Dados do aluno">
+    <div className="day-sheet-header"><div><p className="eyebrow">CADASTRO DO ALUNO</p><h2>{student.nome}</h2></div><button onClick={onClose} aria-label="Fechar dados">×</button></div>
+    {nextInstallment && <div className="payment-reminder"><strong>Próximo pagamento: {(nextInstallment.valor_centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong><span>{nextInstallment.contract.titulo} · vence em {new Date(`${nextInstallment.vencimento_em}T12:00`).toLocaleDateString('pt-BR')}</span></div>}
+    <dl className="student-details"><div><dt>Tipo</dt><dd><StudentTypeBadge type={student.type} /></dd></div><div><dt>E-mail</dt><dd>{student.email || 'Não informado'}</dd></div><div><dt>Telefone</dt><dd>{phone?.numero || 'Não informado'}</dd></div><div><dt>CEP</dt><dd>{address?.cep || 'Não informado'}</dd></div><div className="full"><dt>Endereço</dt><dd>{destination || 'Não informado'}</dd></div><div className="full"><dt>Complemento / referência</dt><dd>{[address?.complemento, address?.referencia].filter(Boolean).join(' · ') || 'Não informado'}</dd></div></dl>
+    <div className="route-actions"><button onClick={openHistory}>Ver histórico e pagamentos</button>{destination && <><button onClick={() => openRoute('maps')}>Ir com Google Maps</button><button onClick={() => openRoute('waze')}>Ir com Waze</button></>}</div>
+  </section>
 }

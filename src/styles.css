@@ -146,3 +146,4 @@ small { color: #70807c; font-weight: 400; }
   .header-search input { height: 2.25rem; padding: 0 .55rem; font-size: .78rem; }
   .dashboard-header > .header-actions > button { padding: .48rem .58rem; font-size: .76rem; }
 }
+.payment-reminder { margin-top: 1rem; padding: .85rem 1rem; display: grid; gap: .2rem; border: 1px solid #fed7aa; border-radius: .7rem; color: #9a3412; background: #fff7ed; }.payment-reminder span { font-size: .82rem; }.history-page button:focus-visible, .student-sheet button:focus-visible, .footer-item:focus-visible { outline: 3px solid #86efac; outline-offset: 2px; }

@@ -21,8 +21,10 @@ export default function App() {
 
   useEffect(() => {
     const syncPath = () => setPath(currentPath())
+    const expireSession = () => { clearSession(); setSession(null); window.history.replaceState({}, '', '/'); setPath('/') }
     window.addEventListener('popstate', syncPath)
-    return () => window.removeEventListener('popstate', syncPath)
+    window.addEventListener('auth:expired', expireSession)
+    return () => { window.removeEventListener('popstate', syncPath); window.removeEventListener('auth:expired', expireSession) }
   }, [])
 
   useEffect(() => {
