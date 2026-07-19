@@ -1,0 +1,1 @@
+export default function ClientPage() { return <main className="dashboard-page"><section className="dashboard-content"><p className="eyebrow">FIT ACADEMIA</p><h1>Olá.</h1><p>Esta é a área pública da plataforma.</p></section></main> }
