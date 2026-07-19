@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { clearSession, readSession, rolePaths, saveSession } from './lib/auth'
 import { getMenu, logout } from './lib/api'
 import FooterBar from './components/navigation/FooterBar'
+import ThemeToggle from './components/settings/ThemeToggle'
 import LoginPage from './pages/login/LoginPage'
 import AdminPage from './pages/admin/AdminPage'
 import PersonalPage from './pages/personal/PersonalPage'
@@ -26,10 +27,10 @@ export default function App() {
   function handleLogin(nextSession) { saveSession(nextSession); navigate(rolePaths[nextSession.access.slug] || '/') }
   async function handleLogout() { await logout(session.token); clearSession(); navigate('/') }
 
-  if (path === '/cliente') return <ClientPage />
+  if (path === '/cliente') return <><ThemeToggle /><ClientPage /></>
   const allowedRole = requestedRole === 'aluno' ? ['aluno_recorrente', 'aluno_avulso'].includes(session?.access?.slug) : session?.access?.slug === requestedRole
-  if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <LoginPage onLogin={handleLogin} />
+  if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <><ThemeToggle /><LoginPage onLogin={handleLogin} /></>
 
   const Page = pages[requestedRole]
-  return <><Page user={session.user} token={session.token} onLogout={handleLogout} />{menu.length > 0 && <FooterBar items={menu} />}</>
+  return <><ThemeToggle /><Page user={session.user} token={session.token} onLogout={handleLogout} />{menu.length > 0 && <FooterBar items={menu} />}</>
 }
