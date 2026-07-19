@@ -1,7 +1,15 @@
 export default function BackButton({ fallback = '/' }) {
   function goBack() {
-    if (window.history.length > 1) window.history.back()
-    else window.location.assign(fallback)
+    const parts = window.location.pathname.split('/').filter(Boolean)
+
+    // A navegação interna recarrega a aplicação; por isso usamos a hierarquia
+    // da rota em vez do histórico do WebView, que pode variar entre plataformas.
+    if (parts.length > 1) {
+      window.location.assign(`/${parts[0]}`)
+      return
+    }
+
+    window.location.assign(fallback)
   }
 
   return <button className="back-button" type="button" onClick={goBack} aria-label="Voltar para a tela anterior">
