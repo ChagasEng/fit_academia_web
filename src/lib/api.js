@@ -47,6 +47,10 @@ export async function createAppointment(token, appointment) {
   const response = await fetch(`${apiUrl}/personal/agenda`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(appointment) })
   return result(response, 'Não foi possível salvar o agendamento.')
 }
+export async function updateAppointment(token, id, appointment) {
+  const response = await fetch(`${apiUrl}/personal/agenda/${id}`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(appointment) })
+  return result(response, 'Não foi possível atualizar o local do agendamento.')
+}
 
 export function getPersonalProfile(token) { return authorizedGet('/personal/profile', token) }
 export function getRevenue(token) { return authorizedGet('/personal/financeiro', token) }
