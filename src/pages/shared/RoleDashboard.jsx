@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getMenu } from '../../lib/api'
 import FooterBar from '../../components/navigation/FooterBar'
+import BackButton from '../../components/navigation/BackButton'
 
 export default function RoleDashboard({ title, description, user, token, onLogout }) {
   const [menu, setMenu] = useState([])
@@ -10,7 +11,7 @@ export default function RoleDashboard({ title, description, user, token, onLogou
   }, [token])
 
   return <main className="dashboard-page">
-    <header className="dashboard-header"><strong>fit<span>academia</span></strong><button onClick={onLogout}>Sair</button></header>
+    <header className="dashboard-header"><div className="header-side"><BackButton /><strong>fit<span>academia</span></strong></div><button onClick={onLogout}>Sair</button></header>
     <section className="dashboard-content">
       <p className="eyebrow">{title.toUpperCase()}</p>
       <h1>Olá, {user.name}.</h1>

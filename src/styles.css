@@ -17,6 +17,9 @@ button, input { font: inherit; }
 .presentation-footer { margin: 0; color: #b8d8d0; font-size: .78rem; }
 
 .login-panel { width: min(100%, 36rem); align-self: center; justify-self: center; padding: 3rem; }
+.login-back { margin-bottom: 1.5rem; }
+.login-back .back-button { color: #4d5c68; padding-left: 0; }
+.login-back .back-button:hover { color: #113d3b; background: transparent; }
 .mobile-brand { display: none; }
 .form-heading { margin-bottom: 2.5rem; }
 .form-heading .eyebrow { color: #148266; }
@@ -35,10 +38,14 @@ button:disabled { cursor: wait; opacity: .7; }
 
 .dashboard-page { min-height: 100vh; padding-bottom: 5.75rem; background: #f7faf9; }
 .dashboard-header { height: 4.5rem; padding: 0 clamp(1.5rem, 6vw, 6rem); display: flex; align-items: center; justify-content: space-between; color: #f7fcfb; background: #113d3b; }
+.header-side { display: flex; align-items: center; gap: 1rem; }
 .dashboard-header strong { font-family: Manrope, sans-serif; letter-spacing: -.08em; }
 .dashboard-header strong span { color: #86efac; }
 .dashboard-header button { width: auto; height: auto; margin: 0; padding: .55rem .9rem; background: transparent; border: 1px solid #70a99a; }
 .dashboard-header button:hover { background: #19534e; }
+.back-button { width: auto; height: auto; margin: 0; padding: .42rem .55rem; display: inline-flex; align-items: center; gap: .35rem; color: #d8eeea; border: 0; background: transparent; font-size: .82rem; }
+.back-button span:first-child { font-size: 1.25rem; line-height: .8; }
+.back-button:hover { color: #fff; background: #19534e; }
 .dashboard-content { width: min(100% - 3rem, 64rem); margin: 0 auto; padding: clamp(4rem, 10vw, 8rem) 0; }
 .dashboard-content .eyebrow { color: #148266; }
 .dashboard-content h1 { margin: 0; font-family: Manrope, sans-serif; font-size: clamp(2.5rem, 6vw, 4.5rem); letter-spacing: -.07em; }

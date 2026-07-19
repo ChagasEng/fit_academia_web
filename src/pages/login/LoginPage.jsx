@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { login } from '../../lib/api'
+import BackButton from '../../components/navigation/BackButton'
 
 function Brand() {
   return <div className="brand" aria-label="Fit Academia"><span className="brand-mark" aria-hidden="true">F</span><span>fit<span>academia</span></span></div>
@@ -37,6 +38,7 @@ export default function LoginPage({ onLogin }) {
       <p className="presentation-footer">© {new Date().getFullYear()} Fit Academia</p>
     </section>
     <section className="login-panel" aria-labelledby="login-title">
+      <div className="login-back"><BackButton fallback="/cliente" /></div>
       <div className="mobile-brand"><Brand /></div>
       <div className="form-heading">
         <p className="eyebrow">ACESSO À PLATAFORMA</p>
