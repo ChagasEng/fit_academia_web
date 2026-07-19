@@ -32,6 +32,9 @@ export default function AcademiesPage({ token, onLogout }) {
   const academies = data?.academies || []
   const filtered = academies.filter((academy) => searchText(academy.nome).includes(searchText(query)))
   const mappedAcademies = academies.filter((academy) => academy.latitude !== null && academy.longitude !== null)
+  const confirmedAcademies = academies.filter((academy) => academy.localizacao_precisao === 'CONFIRMADA')
+  const approximateAcademies = academies.filter((academy) => academy.localizacao_precisao === 'APROXIMADA')
+  const reviewAcademies = academies.filter((academy) => academy.localizacao_precisao === 'REVISAR')
 
   const selectAcademy = useCallback(async (academy) => {
     setSelectedId(academy.id)
@@ -67,14 +70,19 @@ export default function AcademiesPage({ token, onLogout }) {
           <div>
             <p className="eyebrow">MAPA DE ACADEMIAS</p>
             <h1>Academias em {data?.city || 'Ponta Grossa'}</h1>
-            <p>{academies.length} academias cadastradas · {mappedAcademies.length} com posição confirmada no mapa.</p>
+            <p>{academies.length} academias cadastradas · {mappedAcademies.length} com ponto no mapa.</p>
           </div>
           <input type="search" placeholder="Pesquisar academia" value={query} onChange={(event) => setQuery(event.target.value)} />
         </div>
 
         {data?.message && <p className="map-warning">{data.message}</p>}
         {error && <div className="map-warning"><span>{error}</span><button type="button" onClick={retry}>Tentar novamente</button></div>}
-        <p className="osm-coverage-note"><strong>Sobre a cobertura:</strong> a lista reúne OpenStreetMap e o diretório local de Ponta Grossa. Só marcamos no mapa locais com coordenada confirmada, para não posicionar uma academia no endereço errado.</p>
+        <div className="academy-map-legend" aria-label="Precisão dos pontos no mapa">
+          <span className="confirmed">{confirmedAcademies.length} confirmadas</span>
+          <span className="approximate">{approximateAcademies.length} aproximadas</span>
+          <span className="review">{reviewAcademies.length} para revisar</span>
+        </div>
+        <p className="osm-coverage-note"><strong>Sobre a cobertura:</strong> a lista reúne OpenStreetMap e o diretório local de Ponta Grossa. Pontos aproximados e endereços que precisam de revisão aparecem com cores diferentes dos locais confirmados.</p>
 
         <div className="academy-page-layout">
           <AcademyMap academies={filtered} selectedId={selectedId} onSelect={selectAcademy} />
@@ -92,7 +100,7 @@ export default function AcademiesPage({ token, onLogout }) {
                   return (
                     <button type="button" key={academy.id} onClick={() => selectAcademy(academy)}>
                       <span className={mapped ? 'academy-location-status mapped' : 'academy-location-status'} aria-hidden="true">{mapped ? '⌖' : '•'}</span>
-                      <span><strong>{academy.nome}</strong><small>{academy.endereco || `${academy.cidade} · ${academy.estado}`}</small></span>
+                      <span><strong>{academy.nome}</strong><small>{academy.endereco || `${academy.cidade} · ${academy.estado}`}</small><em className={`precision-${academy.localizacao_precisao?.toLowerCase() || 'osm'}`}>{academy.localizacao_precisao === 'CONFIRMADA' ? 'Confirmada' : academy.localizacao_precisao === 'APROXIMADA' ? 'Aproximada' : academy.localizacao_precisao === 'REVISAR' ? 'Revisar ponto' : 'OpenStreetMap'}</em></span>
                       <b>›</b>
                     </button>
                   )
@@ -107,6 +115,7 @@ export default function AcademiesPage({ token, onLogout }) {
                   <span>ACADEMIA</span>
                   <h2>{details.academy.nome}</h2>
                   <p>{details.academy.endereco || `${details.academy.cidade} · ${details.academy.estado}`}</p>
+                  {details.academy.localizacao_precisao && <small className={`academy-detail-precision precision-${details.academy.localizacao_precisao.toLowerCase()}`}>{details.academy.localizacao_precisao === 'CONFIRMADA' ? 'Localização confirmada' : details.academy.localizacao_precisao === 'APROXIMADA' ? 'Localização aproximada' : 'Localização a revisar'}</small>}
                 </div>
                 <h3>{(details.students || []).length} {(details.students || []).length === 1 ? 'aluno vinculado' : 'alunos vinculados'}</h3>
                 <div className="academy-students">

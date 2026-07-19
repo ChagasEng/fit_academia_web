@@ -3,6 +3,14 @@ import { getAcademies } from '../../lib/api'
 import { searchText } from '../../lib/text'
 import AcademyMap from './AcademyMap'
 
+const precisionLabel = (academy) => {
+  if (academy.latitude === null || academy.longitude === null) return 'Sem posição no mapa'
+  if (academy.localizacao_precisao === 'CONFIRMADA') return 'Localização confirmada'
+  if (academy.localizacao_precisao === 'APROXIMADA') return 'Localização aproximada'
+  if (academy.localizacao_precisao === 'REVISAR') return 'Localização a revisar'
+  return 'Localização via OpenStreetMap'
+}
+
 export default function AcademyPickerModal({ token, selectedId, onSelect, onClose }) {
   const [data, setData] = useState(null)
   const [query, setQuery] = useState('')
@@ -57,7 +65,7 @@ export default function AcademyPickerModal({ token, selectedId, onSelect, onClos
               <button type="button" className={`${Number(selectedId) === Number(academy.id) ? 'selected' : ''}${academy.latitude === null || academy.longitude === null ? ' academy-unmapped' : ''}`} key={academy.id} onClick={() => choose(academy)}>
                 <strong>{academy.nome}</strong>
                 <span>{academy.endereco || `${academy.cidade || data?.city} · ${academy.estado || data?.state}`}</span>
-                {(academy.latitude === null || academy.longitude === null) && <small>Sem posição no mapa</small>}
+                <small className={`academy-precision precision-${academy.localizacao_precisao?.toLowerCase() || 'osm'}`}>{precisionLabel(academy)}</small>
               </button>
             ))}
             {data && filtered.length === 0 && <p>Nenhuma academia encontrada com esse nome.</p>}
