@@ -80,7 +80,7 @@ export default function ProfilePage({ token, onLogout }) {
     }
   }
 
-  const money = (value) => (value / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const money = (value) => (Number(value || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
   return (
     <main className="dashboard-page registration-page">

@@ -18,6 +18,9 @@ export default function App() {
   const [menu, setMenu] = useState([])
   const [path, setPath] = useState(currentPath)
   const requestedRole = path.split('/').filter(Boolean)[0]
+  const sessionRole = session?.access?.slug
+  const allowedRole = requestedRole === 'aluno' ? ['aluno_recorrente', 'aluno_avulso'].includes(sessionRole) : sessionRole === requestedRole
+  const invalidPrivateRoute = session?.token && path !== '/cliente' && (!requestedRole || !pages[requestedRole] || !allowedRole)
 
   useEffect(() => {
     const syncPath = () => setPath(currentPath())
@@ -28,11 +31,11 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (session?.token && !requestedRole) {
-      const destination = rolePaths[session.access?.slug]
+    if (invalidPrivateRoute) {
+      const destination = rolePaths[sessionRole]
       if (destination) navigate(destination, true)
     }
-  }, [session, requestedRole])
+  }, [invalidPrivateRoute, sessionRole])
 
   useEffect(() => {
     if (!session?.token) return setMenu([])
@@ -40,16 +43,19 @@ export default function App() {
   }, [session])
 
   function navigate(nextPath, replace = false) {
+    if (currentPath() === nextPath) return
     window.history[replace ? 'replaceState' : 'pushState']({}, '', nextPath)
     setPath(currentPath())
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
-  function handleLogin(nextSession) { saveSession(nextSession); setSession(nextSession); navigate(rolePaths[nextSession.access.slug] || '/') }
-  async function handleLogout() { await logout(session.token); clearSession(); setSession(null); navigate('/') }
+  function handleLogin(nextSession) { saveSession(nextSession); setSession(nextSession); navigate(rolePaths[nextSession.access.slug] || '/', true) }
+  async function handleLogout() {
+    try { await logout(session.token) } catch { /* a sessão local deve encerrar mesmo sem conexão */ }
+    finally { clearSession(); setSession(null); navigate('/', true) }
+  }
 
-  if (session?.token && !requestedRole) return null
+  if (invalidPrivateRoute) return null
   if (path === '/cliente') return <><ThemeToggle /><ClientPage /></>
-  const allowedRole = requestedRole === 'aluno' ? ['aluno_recorrente', 'aluno_avulso'].includes(session?.access?.slug) : session?.access?.slug === requestedRole
   if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <><ThemeToggle /><LoginPage onLogin={handleLogin} /></>
 
   const Page = pages[requestedRole]

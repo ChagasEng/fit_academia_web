@@ -12,8 +12,11 @@ import {
 } from '../../lib/api'
 import { appointmentLocationLabel, locationFromAppointment } from '../../lib/appointmentLocation'
 
-const money = (value = 0) => (value / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-const today = () => new Date().toISOString().slice(0, 10)
+const money = (value = 0) => (Number(value || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+const today = () => {
+  const date = new Date()
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
 
 export default function StudentHistoryPage({ token, onLogout, studentId }) {
   const [data, setData] = useState(null)
@@ -123,8 +126,11 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
 
   if (!data) return <main className="dashboard-page"><section className="registration-content"><p>Carregando histórico…</p></section></main>
 
-  const installments = data.contracts.flatMap((contract) => contract.installments.map((installment) => ({ ...installment, contract })))
-  const nextAppointment = data.appointments
+  const contracts = Array.isArray(data.contracts) ? data.contracts : []
+  const appointments = Array.isArray(data.appointments) ? data.appointments : []
+  const notes = Array.isArray(data.notes) ? data.notes : []
+  const installments = contracts.flatMap((contract) => (contract.installments || []).map((installment) => ({ ...installment, contract })))
+  const nextAppointment = appointments
     .filter((appointment) => appointment.status === 'agendado' && new Date(appointment.inicio) >= new Date())
     .sort((a, b) => new Date(a.inicio) - new Date(b.inicio))[0]
 
@@ -219,8 +225,8 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
             <button>Adicionar</button>
           </form>
 
-          {data.notes.map((item) => <p className="timeline-note" key={item.id}>{item.conteudo}</p>)}
-          {data.appointments.map((item) => (
+          {notes.map((item) => <p className="timeline-note" key={item.id}>{item.conteudo}</p>)}
+          {appointments.map((item) => (
             <article className="timeline-appointment" key={`appointment-${item.id}`}>
               <div className="timeline-appointment-heading">
                 <div>

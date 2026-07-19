@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import AcademyMap from '../../components/academies/AcademyMap'
 import BackButton from '../../components/navigation/BackButton'
 import { getAcademies, getAcademy } from '../../lib/api'
+import { searchText } from '../../lib/text'
 
 const appointmentDate = (appointment) => new Date(appointment.inicio).toLocaleString('pt-BR', {
   day: '2-digit',
@@ -29,7 +30,7 @@ export default function AcademiesPage({ token, onLogout }) {
   useEffect(() => { load() }, [load])
 
   const academies = data?.academies || []
-  const filtered = academies.filter((academy) => academy.nome.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')))
+  const filtered = academies.filter((academy) => searchText(academy.nome).includes(searchText(query)))
   const mappedAcademies = academies.filter((academy) => academy.latitude !== null && academy.longitude !== null)
 
   const selectAcademy = useCallback(async (academy) => {
@@ -46,6 +47,12 @@ export default function AcademiesPage({ token, onLogout }) {
   function openHistory(studentId) {
     window.history.pushState({}, '', `/personal/alunos/${studentId}/historico`)
     window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+
+  function retry() {
+    const academy = academies.find((item) => Number(item.id) === Number(selectedId))
+    if (academy) selectAcademy(academy)
+    else load()
   }
 
   return (
@@ -66,24 +73,44 @@ export default function AcademiesPage({ token, onLogout }) {
         </div>
 
         {data?.message && <p className="map-warning">{data.message}</p>}
-        {error && <div className="map-warning"><span>{error}</span><button type="button" onClick={load}>Tentar novamente</button></div>}
+        {error && <div className="map-warning"><span>{error}</span><button type="button" onClick={retry}>Tentar novamente</button></div>}
         <p className="osm-coverage-note"><strong>Sobre a cobertura:</strong> a lista reúne OpenStreetMap e o diretório local de Ponta Grossa. Só marcamos no mapa locais com coordenada confirmada, para não posicionar uma academia no endereço errado.</p>
 
         <div className="academy-page-layout">
           <AcademyMap academies={filtered} selectedId={selectedId} onSelect={selectAcademy} />
           <aside className="academy-details">
-            {!selectedId && <div className="academy-details-empty"><span>⌖</span><strong>Clique em uma academia</strong><p>Você verá os alunos vinculados e seus próximos horários.</p></div>}
+            {!selectedId && (
+              <div className="academy-directory">
+                <div className="academy-directory-heading">
+                  <div><span>DIRETÓRIO</span><h2>{filtered.length} academias</h2></div>
+                  <small>Selecione para ver alunos e horários.</small>
+                </div>
+                {!data && <p>Carregando academias…</p>}
+                {data && filtered.length === 0 && <p>Nenhuma academia encontrada com esse nome.</p>}
+                {filtered.map((academy) => {
+                  const mapped = academy.latitude !== null && academy.longitude !== null
+                  return (
+                    <button type="button" key={academy.id} onClick={() => selectAcademy(academy)}>
+                      <span className={mapped ? 'academy-location-status mapped' : 'academy-location-status'} aria-hidden="true">{mapped ? '⌖' : '•'}</span>
+                      <span><strong>{academy.nome}</strong><small>{academy.endereco || `${academy.cidade} · ${academy.estado}`}</small></span>
+                      <b>›</b>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
             {selectedId && !details && <p>Carregando alunos…</p>}
             {details && (
               <>
+                <button type="button" className="academy-directory-back" onClick={() => { setSelectedId(null); setDetails(null) }}>← Ver todas</button>
                 <div className="academy-details-heading">
                   <span>ACADEMIA</span>
                   <h2>{details.academy.nome}</h2>
                   <p>{details.academy.endereco || `${details.academy.cidade} · ${details.academy.estado}`}</p>
                 </div>
-                <h3>{details.students.length} {details.students.length === 1 ? 'aluno vinculado' : 'alunos vinculados'}</h3>
+                <h3>{(details.students || []).length} {(details.students || []).length === 1 ? 'aluno vinculado' : 'alunos vinculados'}</h3>
                 <div className="academy-students">
-                  {details.students.map((student) => {
+                  {(details.students || []).map((student) => {
                     const nextAppointment = student.appointments?.[0]
                     return (
                       <button type="button" key={student.id} onClick={() => openHistory(student.id)}>
@@ -96,13 +123,13 @@ export default function AcademiesPage({ token, onLogout }) {
                       </button>
                     )
                   })}
-                  {details.students.length === 0 && <p>Nenhum aluno foi vinculado a esta academia ainda.</p>}
+                  {(details.students || []).length === 0 && <p>Nenhum aluno foi vinculado a esta academia ainda.</p>}
                 </div>
               </>
             )}
           </aside>
         </div>
-        <small className="osm-credit">Mapa e dados © contribuidores do OpenStreetMap.</small>
+        <small className="osm-credit">Mapa © contribuidores do OpenStreetMap · diretório local de academias.</small>
       </section>
     </main>
   )

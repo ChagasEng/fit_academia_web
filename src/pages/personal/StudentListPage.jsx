@@ -11,15 +11,27 @@ export default function StudentListPage({ token, onLogout }) {
   const [pagination, setPagination] = useState({ current_page: 1, last_page: 1 })
   const [counts, setCounts] = useState({ total: 0, recorrentes: 0, avulsos: 0 })
   const [selected, setSelected] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
+    let active = true
+    setLoading(true)
+    setError('')
     getStudents(token, page, '', type)
       .then((data) => {
+        if (!active) return
         setStudents(data.students?.data || [])
         setPagination(data.students || {})
         setCounts(data.counts || {})
       })
-      .catch(() => setStudents([]))
+      .catch((requestError) => {
+        if (!active || requestError.name === 'AbortError') return
+        setStudents([])
+        setError(requestError.message)
+      })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [token, page, type])
 
   function selectType(nextType) {
@@ -28,7 +40,12 @@ export default function StudentListPage({ token, onLogout }) {
   }
 
   async function selectStudent(id) {
-    setSelected(await getStudent(token, id))
+    try {
+      setError('')
+      setSelected(await getStudent(token, id))
+    } catch (requestError) {
+      setError(requestError.message)
+    }
   }
 
   return (
@@ -59,6 +76,7 @@ export default function StudentListPage({ token, onLogout }) {
         </div>
 
         <div className="student-list">
+          {loading && <p className="list-status">Carregando alunos…</p>}
           {students.map((student) => (
             <button type="button" onClick={() => selectStudent(student.id)} key={student.id}>
               <div className="student-avatar">{student.nome.slice(0, 1)}</div>
@@ -70,8 +88,9 @@ export default function StudentListPage({ token, onLogout }) {
               <span className="student-next">›</span>
             </button>
           ))}
-          {students.length === 0 && <p>Nenhum aluno encontrado.</p>}
+          {!loading && !error && students.length === 0 && <p className="list-status">Nenhum aluno encontrado.</p>}
         </div>
+        {error && <p className="form-error" role="alert">{error}</p>}
 
         {pagination.last_page > 1 && (
           <div className="pagination">

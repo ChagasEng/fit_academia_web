@@ -13,6 +13,9 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   const [mode, setMode] = useState('existing')
   const [students, setStudents] = useState([])
   const [studentId, setStudentId] = useState('')
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [studentSearch, setStudentSearch] = useState('')
+  const [loadingStudents, setLoadingStudents] = useState(false)
   const [newStudent, setNewStudent] = useState({ nome: '', telefone: '', usuario_tipo_id: '4' })
   const [time, setTime] = useState('08:00')
   const [appointmentType, setAppointmentType] = useState('2')
@@ -21,14 +24,30 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    getStudents(token)
-      .then((data) => setStudents(data.students?.data || []))
-      .catch(() => setStudents([]))
-  }, [token])
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      setStudents([])
+      setLoadingStudents(true)
+      getStudents(token, 1, studentSearch.trim(), '', controller.signal)
+        .then((data) => setStudents(data.students?.data || []))
+        .catch((requestError) => {
+          if (requestError.name !== 'AbortError') setError(requestError.message)
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setLoadingStudents(false)
+        })
+    }, studentSearch.trim() ? 220 : 0)
+
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [token, studentSearch])
 
   function changeExistingStudent(id) {
     setStudentId(id)
     const student = students.find((item) => String(item.id) === String(id))
+    setSelectedStudent(student || null)
     const address = student?.addresses?.[0]
     if (location.local_tipo === 'domicilio' && address && !location.local_cep) {
       setLocation(locationFromStudentAddress(address))
@@ -41,7 +60,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   function changeLocation(nextLocation) {
     const switchedToHome = location.local_tipo !== 'domicilio' && nextLocation.local_tipo === 'domicilio'
     const switchedToAcademy = location.local_tipo !== 'academia' && nextLocation.local_tipo === 'academia'
-    const student = students.find((item) => String(item.id) === String(studentId))
+    const student = selectedStudent
     const address = student?.addresses?.[0]
     if (switchedToHome && address) return setLocation(locationFromStudentAddress(address))
     if (switchedToAcademy && student?.academy) return setLocation({ ...nextLocation, academia_id: student.academy.id, academia_nome: student.academy.nome })
@@ -55,7 +74,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
 
     try {
       let selectedId = studentId
-      let name = students.find((student) => String(student.id) === String(studentId))?.nome
+      let name = selectedStudent?.nome
 
       if (mode === 'new') {
         const created = await createStudent(token, {
@@ -117,13 +136,22 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
         </label>
 
         {mode === 'existing' ? (
-          <label>
-            Aluno
-            <select required value={studentId} onChange={(event) => changeExistingStudent(event.target.value)}>
-              <option value="">Selecione o aluno</option>
-              {students.map((student) => <option key={student.id} value={student.id}>{student.nome} — {student.type?.nome}</option>)}
-            </select>
-          </label>
+          <div className="booking-student-picker">
+            <label>
+              Pesquisar aluno
+              <input type="search" value={studentSearch} onChange={(event) => setStudentSearch(event.target.value)} placeholder="Digite o nome do aluno" />
+              <small>{loadingStudents ? 'Pesquisando…' : 'A lista é atualizada conforme você digita.'}</small>
+            </label>
+            <label>
+              Aluno
+              <select required value={studentId} onChange={(event) => changeExistingStudent(event.target.value)}>
+                <option value="">Selecione o aluno</option>
+                {selectedStudent && !students.some((student) => String(student.id) === String(selectedStudent.id)) && <option value={selectedStudent.id}>{selectedStudent.nome} — {selectedStudent.type?.nome}</option>}
+                {students.map((student) => <option key={student.id} value={student.id}>{student.nome} — {student.type?.nome}</option>)}
+              </select>
+              {!loadingStudents && students.length === 0 && <small>Nenhum aluno encontrado com esse nome.</small>}
+            </label>
+          </div>
         ) : (
           <div className="booking-grid">
             <label>

@@ -51,14 +51,17 @@ export default function AcademyMap({ academies, selectedId, onSelect, className 
 
       points.push(point)
       const selected = Number(selectedId) === Number(academy.id)
+      const studentsCount = Number.isFinite(Number(academy.students_count)) ? Number(academy.students_count) : 0
       const icon = L.divIcon({
         className: '',
-        html: `<span class="academy-map-marker${selected ? ' selected' : ''}" aria-hidden="true"><b>${academy.students_count || 0}</b></span>`,
+        html: `<span class="academy-map-marker${selected ? ' selected' : ''}" aria-hidden="true"><b>${studentsCount}</b></span>`,
         iconSize: [34, 42],
         iconAnchor: [17, 40],
       })
+      const tooltip = document.createElement('span')
+      tooltip.textContent = academy.nome || 'Academia'
       L.marker(point, { icon, title: academy.nome })
-        .bindTooltip(academy.nome, { direction: 'top', offset: [0, -34] })
+        .bindTooltip(tooltip, { direction: 'top', offset: [0, -34] })
         .on('click', () => onSelect(academy))
         .addTo(layer)
     })

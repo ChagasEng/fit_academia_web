@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getAcademies } from '../../lib/api'
+import { searchText } from '../../lib/text'
 import AcademyMap from './AcademyMap'
 
 export default function AcademyPickerModal({ token, selectedId, onSelect, onClose }) {
@@ -19,7 +20,7 @@ export default function AcademyPickerModal({ token, selectedId, onSelect, onClos
   useEffect(() => { load() }, [load])
 
   const academies = data?.academies || []
-  const filtered = academies.filter((academy) => academy.nome.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')))
+  const filtered = academies.filter((academy) => searchText(academy.nome).includes(searchText(query)))
 
   function choose(academy) {
     onSelect(academy)
@@ -31,7 +32,7 @@ export default function AcademyPickerModal({ token, selectedId, onSelect, onClos
       <div className="academy-picker-modal">
         <header>
           <div>
-            <p className="eyebrow">OPENSTREETMAP</p>
+            <p className="eyebrow">DIRETÓRIO DE ACADEMIAS</p>
             <h2>Escolha a academia</h2>
             <span>{data ? `${data.city} · ${data.state}` : 'Carregando município…'}</span>
           </div>
@@ -63,7 +64,7 @@ export default function AcademyPickerModal({ token, selectedId, onSelect, onClos
           </div>
         </div>
 
-        <small>Dados de academias © contribuidores do OpenStreetMap.</small>
+        <small>Diretório local e dados de localização © contribuidores do OpenStreetMap.</small>
       </div>
     </section>
   )

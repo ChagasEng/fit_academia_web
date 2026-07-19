@@ -6,7 +6,10 @@ export default function StudentDetailsSheet({ student, onClose }) {
   const phoneDigits = phone?.numero?.replace(/\D/g, '') || ''
   const whatsappNumber = phoneDigits.length === 10 || phoneDigits.length === 11 ? `55${phoneDigits}` : phoneDigits
   const destination = address && [address.rua, address.numero, address.bairro, address.cidade, address.estado, address.cep].filter(Boolean).join(', ')
-  const nextInstallment = student.contracts?.flatMap((contract) => contract.installments.map((installment) => ({ ...installment, contract }))).filter((installment) => !installment.pago_em).sort((a, b) => a.vencimento_em.localeCompare(b.vencimento_em))[0]
+  const nextInstallment = (student.contracts || [])
+    .flatMap((contract) => (contract.installments || []).map((installment) => ({ ...installment, contract })))
+    .filter((installment) => !installment.pago_em)
+    .sort((a, b) => String(a.vencimento_em || '').localeCompare(String(b.vencimento_em || '')))[0]
 
   function openRoute(provider) {
     const query = encodeURIComponent(destination)

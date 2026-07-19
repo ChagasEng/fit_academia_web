@@ -2,6 +2,9 @@ const icons = { home: '⌂', users: '♙', building: '▦', profile: '◉', acti
 
 export default function FooterBar({ items, onNavigate }) {
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/'
+  const activePath = items
+    .filter((item) => currentPath === item.path || currentPath.startsWith(`${item.path}/`))
+    .sort((first, second) => second.path.length - first.path.length)[0]?.path
 
   function navigate(path) {
     if (onNavigate) return onNavigate(path)
@@ -11,9 +14,9 @@ export default function FooterBar({ items, onNavigate }) {
   }
 
   return <nav className="footer-bar" aria-label="Menu principal">
-    {items.map((item) => { const nested = item.path.split('/').filter(Boolean).length > 1 && currentPath.startsWith(`${item.path}/`); return <button key={item.path} className={currentPath === item.path || nested ? 'footer-item active' : 'footer-item'} onClick={() => navigate(item.path)}>
+    {items.map((item) => <button key={item.path} className={activePath === item.path ? 'footer-item active' : 'footer-item'} onClick={() => navigate(item.path)}>
       <span className="footer-icon" aria-hidden="true">{icons[item.icon] || '•'}</span>
       <span>{item.label}</span>
-    </button> })}
+    </button>)}
   </nav>
 }

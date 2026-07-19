@@ -51,7 +51,7 @@ export default function StudentRegistrationPage({ token, user, onLogout }) {
   return <main className="dashboard-page registration-page">
     <header className="dashboard-header"><div className="header-side"><BackButton fallback="/personal" /><strong>fit<span>academia</span></strong></div><button onClick={onLogout}>Sair</button></header>
     <section className="registration-content">
-      <p className="eyebrow">PERSONAL · {user.name.toUpperCase()}</p>
+      <p className="eyebrow">PERSONAL · {(user?.name || 'USUÁRIO').toUpperCase()}</p>
       <h1>Novo aluno</h1><p>Cadastre os dados básicos. O endereço pode ser preenchido pelo CEP ou manualmente.</p>
       {!studentType && <div className="student-type-choice"><h2>Qual é o tipo de aluno?</h2><p>Selecione uma opção para iniciar o cadastro.</p><div className="type-buttons"><button type="button" onClick={() => setStudentType({ id: 4, label: 'Aluno recorrente' })}><strong>Aluno recorrente</strong><span>Possui rotina contínua na academia.</span></button><button type="button" onClick={() => setStudentType({ id: 5, label: 'Aluno avulso' })}><strong>Aluno avulso</strong><span>Atendimento ou acesso pontual.</span></button></div></div>}
       {studentType && <>
