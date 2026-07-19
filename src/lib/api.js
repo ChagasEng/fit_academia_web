@@ -49,3 +49,12 @@ export async function createAppointment(token, appointment) {
   if (!response.ok) throw new Error(data.message || 'Não foi possível salvar o agendamento.')
   return data
 }
+
+export function getPersonalProfile(token) { return authorizedGet('/personal/profile', token) }
+
+export async function updatePersonalProfile(token, profile) {
+  const response = await fetch(`${apiUrl}/personal/profile`, { method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(profile) })
+  const data = await response.json()
+  if (!response.ok) throw new Error(data.message || 'Não foi possível atualizar o perfil.')
+  return data
+}
