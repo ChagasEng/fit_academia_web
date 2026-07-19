@@ -34,10 +34,12 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
   if (!data) return <main className="dashboard-page"><section className="registration-content"><p>Carregando histórico…</p></section></main>
 
   const installments = data.contracts.flatMap((contract) => contract.installments.map((installment) => ({ ...installment, contract })))
+  const nextAppointment = data.appointments.filter((appointment) => appointment.status === 'agendado' && new Date(appointment.inicio) >= new Date()).sort((a, b) => new Date(a.inicio) - new Date(b.inicio))[0]
   return <main className="dashboard-page registration-page">
     <header className="dashboard-header"><div className="header-side"><BackButton fallback="/personal/alunos" /><strong>fit<span>academia</span></strong></div><button onClick={onLogout}>Sair</button></header>
     <section className="registration-content history-page">
       <p className="eyebrow">HISTÓRICO DO ALUNO</p><h1>{data.student.nome}</h1><p>Atendimentos, plano fechado e pagamentos em um só lugar.</p>
+      {nextAppointment ? <div className="appointment-summary"><span>PRÓXIMO AGENDAMENTO</span><strong>{nextAppointment.type?.nome} · {new Date(nextAppointment.inicio).toLocaleDateString('pt-BR')} às {new Date(nextAppointment.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</strong></div> : <div className="appointment-summary empty"><span>AGENDA</span><strong>Nenhum próximo agendamento.</strong></div>}
       {error && <p className="form-error">{error}</p>}
       <div className="history-grid">
         <section className="history-card"><h2>Novo plano</h2><form onSubmit={savePlan}>

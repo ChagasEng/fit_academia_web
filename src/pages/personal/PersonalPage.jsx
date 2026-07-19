@@ -3,13 +3,15 @@ import StudentListPage from './StudentListPage'
 import AgendaPage from './AgendaPage'
 import ProfilePage from './ProfilePage'
 import StudentHistoryPage from './StudentHistoryPage'
+import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 
 export default function PersonalPage(props) {
   const path = window.location.pathname
-  if (path === '/personal/alunos/cadastrar') return <StudentRegistrationPage {...props} />
-  if (path === '/personal/alunos') return <StudentListPage {...props} />
-  if (path === '/personal/perfil') return <ProfilePage {...props} />
   const history = path.match(/^\/personal\/alunos\/(\d+)\/historico$/)
-  if (history) return <StudentHistoryPage {...props} studentId={history[1]} />
-  return <AgendaPage {...props} />
+  const page = path === '/personal/alunos/cadastrar' ? <StudentRegistrationPage {...props} />
+    : path === '/personal/alunos' ? <StudentListPage {...props} />
+      : path === '/personal/perfil' ? <ProfilePage {...props} />
+        : history ? <StudentHistoryPage {...props} studentId={history[1]} />
+          : <AgendaPage {...props} />
+  return <>{path !== '/personal' && <div className="personal-global-search"><StudentQuickSearch token={props.token} /></div>}{page}</>
 }
