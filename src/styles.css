@@ -36,8 +36,8 @@ button:active { transform: translateY(1px); }
 button:disabled { cursor: wait; opacity: .7; }
 .form-error { margin: .55rem 0 0; color: #b42318; font-size: .85rem; }
 
-.dashboard-page { min-height: 100vh; padding-bottom: 5.75rem; background: #f7faf9; }
-.dashboard-header { height: 4.5rem; padding: 0 clamp(1.5rem, 6vw, 6rem); display: flex; align-items: center; justify-content: space-between; color: #f7fcfb; background: #113d3b; }
+.dashboard-page { min-height: 100vh; padding-top: 4.5rem; padding-bottom: 5.75rem; background: #f7faf9; }
+.dashboard-header { position: fixed; z-index: 40; top: 0; right: 0; left: 0; height: 4.5rem; padding: 0 clamp(1.5rem, 6vw, 6rem); display: flex; align-items: center; justify-content: space-between; color: #f7fcfb; background: #113d3b; }
 .header-side { display: flex; align-items: center; gap: 1rem; }
 .dashboard-header strong { font-family: Manrope, sans-serif; letter-spacing: -.08em; }
 .dashboard-header strong span { color: #86efac; }
