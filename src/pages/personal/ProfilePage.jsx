@@ -15,6 +15,14 @@ const emptyProfile = {
   complemento: '',
 }
 
+function normalizeProfile(response = {}) {
+  const profile = { ...emptyProfile, ...response }
+  Object.keys(emptyProfile).forEach((key) => {
+    if (profile[key] === null || profile[key] === undefined) profile[key] = emptyProfile[key]
+  })
+  return profile
+}
+
 export default function ProfilePage({ token, onLogout }) {
   const [profile, setProfile] = useState(emptyProfile)
   const [message, setMessage] = useState('')
@@ -24,21 +32,17 @@ export default function ProfilePage({ token, onLogout }) {
 
   useEffect(() => {
     getPersonalProfile(token)
-      .then((response) => setProfile({
-        ...emptyProfile,
-        ...response,
-        cidade: response.cidade || emptyProfile.cidade,
-        estado: response.estado || emptyProfile.estado,
-      }))
+      .then((response) => setProfile(normalizeProfile(response)))
       .catch(() => setError('Não foi possível carregar o perfil.'))
   }, [token])
   useEffect(() => { getRevenue(token).then(setRevenue).catch(() => null) }, [token])
 
   useEffect(() => {
-    if (profile.cep.length !== 8) return undefined
+    const cep = profile.cep || ''
+    if (cep.length !== 8) return undefined
     const controller = new AbortController()
     setLoadingCep(true)
-    fetch(`https://viacep.com.br/ws/${profile.cep}/json/`, { signal: controller.signal })
+    fetch(`https://viacep.com.br/ws/${cep}/json/`, { signal: controller.signal })
       .then((response) => response.json())
       .then((data) => {
         if (data.erro) throw new Error('CEP não encontrado.')
@@ -69,7 +73,7 @@ export default function ProfilePage({ token, onLogout }) {
     setMessage('')
     setError('')
     try {
-      setProfile({ ...emptyProfile, ...await updatePersonalProfile(token, profile) })
+      setProfile(normalizeProfile(await updatePersonalProfile(token, profile)))
       setMessage('Perfil e município do mapa atualizados com sucesso.')
     } catch (requestError) {
       setError(requestError.message)
