@@ -135,4 +135,13 @@ small { color: #70807c; font-weight: 400; }
   .login-panel { min-height: 100vh; padding: 2rem 1.5rem; }
   .mobile-brand { display: block; color: #f7fcfb; margin-bottom: 5rem; }
   .form-heading { margin-bottom: 2rem; }
+  .theme-toggle { top: auto; right: 1rem; bottom: calc(5.75rem + env(safe-area-inset-bottom)); }
+  .dashboard-header { padding: 0 .8rem; gap: .45rem; }
+  .dashboard-header .back-button span:last-child { display: none; }
+  .dashboard-header strong { font-size: .9rem; }
+  .header-side { gap: .25rem; }
+  .header-actions { gap: .35rem; min-width: 0; }
+  .header-search { width: min(9.5rem, 39vw); }
+  .header-search input { height: 2.25rem; padding: 0 .55rem; font-size: .78rem; }
+  .dashboard-header > .header-actions > button { padding: .48rem .58rem; font-size: .76rem; }
 }
