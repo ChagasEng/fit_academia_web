@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { findAddressByCep } from '../../lib/appointmentLocation'
+import AcademyPickerModal from '../academies/AcademyPickerModal'
 
-export default function AppointmentLocationFields({ value, onChange }) {
+export default function AppointmentLocationFields({ token, value, onChange }) {
   const [loadingCep, setLoadingCep] = useState(false)
   const [cepError, setCepError] = useState('')
+  const [showAcademies, setShowAcademies] = useState(false)
 
   useEffect(() => {
     if (value.local_tipo !== 'domicilio' || value.local_cep.length !== 8) {
@@ -53,15 +55,31 @@ export default function AppointmentLocationFields({ value, onChange }) {
       </div>
 
       {value.local_tipo === 'academia' ? (
-        <label>
-          Nome da academia
-          <input
-            required
-            placeholder="Ex.: Smart Fit Centro"
-            value={value.academia_nome}
-            onChange={(event) => update('academia_nome', event.target.value)}
-          />
-        </label>
+        <div className="appointment-academy-choice">
+          <button type="button" className="academy-picker-trigger" onClick={() => setShowAcademies(true)}>
+            <span aria-hidden="true">⌖</span>
+            <span><small>SELECIONAR NO MAPA</small><strong>{value.academia_nome || 'Escolher academia'}</strong></span>
+            <b>›</b>
+          </button>
+          <label>
+            Nome manual da academia
+            <input
+              required
+              placeholder="Use se o mapa estiver indisponível"
+              value={value.academia_nome}
+              onChange={(event) => onChange({ ...value, academia_id: '', academia_nome: event.target.value })}
+            />
+            <small>O nome manual mantém o agendamento funcionando mesmo se a API estiver fora.</small>
+          </label>
+          {showAcademies && (
+            <AcademyPickerModal
+              token={token}
+              selectedId={value.academia_id}
+              onClose={() => setShowAcademies(false)}
+              onSelect={(academy) => onChange({ ...value, academia_id: academy.id, academia_nome: academy.nome })}
+            />
+          )}
+        </div>
       ) : (
         <div className="location-address-grid">
           <label>

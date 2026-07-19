@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import AppointmentLocationFields from '../../components/appointments/AppointmentLocationFields'
+import AcademyPickerModal from '../../components/academies/AcademyPickerModal'
 import BackButton from '../../components/navigation/BackButton'
 import {
   createContract,
@@ -7,6 +8,7 @@ import {
   getStudentHistory,
   markInstallmentPaid,
   updateAppointment,
+  updateStudent,
 } from '../../lib/api'
 import { appointmentLocationLabel, locationFromAppointment } from '../../lib/appointmentLocation'
 
@@ -21,6 +23,7 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
   const [note, setNote] = useState('')
   const [editingAppointment, setEditingAppointment] = useState(null)
   const [location, setLocation] = useState(null)
+  const [showStudentAcademies, setShowStudentAcademies] = useState(false)
   const [form, setForm] = useState({
     titulo: 'Consultoria 2 meses',
     valor: '',
@@ -83,6 +86,27 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
     }
   }
 
+  async function selectStudentAcademy(academy) {
+    try {
+      setError('')
+      await updateStudent(token, studentId, { academia_id: academy.id })
+      setShowStudentAcademies(false)
+      await load()
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
+  async function removeStudentAcademy() {
+    try {
+      setError('')
+      await updateStudent(token, studentId, { academia_id: null })
+      await load()
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
   if (error && !data) {
     return (
       <main className="dashboard-page">
@@ -115,6 +139,11 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
         <p className="eyebrow">HISTÓRICO DO ALUNO</p>
         <h1>{data.student.nome}</h1>
         <p>Atendimentos, locais, plano fechado e pagamentos em um só lugar.</p>
+
+        <div className="student-academy-summary">
+          <div><span>ACADEMIA PRINCIPAL</span><strong>{data.student.academy?.nome || 'Nenhuma academia vinculada'}</strong><small>{data.student.academy?.endereco || 'Escolha no mapa para organizar alunos e agendamentos por academia.'}</small></div>
+          <div className="student-academy-actions"><button type="button" onClick={() => setShowStudentAcademies(true)}>{data.student.academy ? 'Alterar academia' : 'Escolher academia'}</button>{data.student.academy && <button type="button" className="secondary-button" onClick={removeStudentAcademy}>Remover</button>}</div>
+        </div>
 
         {nextAppointment ? (
           <div className="appointment-summary">
@@ -205,7 +234,7 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
 
               {editingAppointment === item.id && location && (
                 <form className="appointment-location-editor" onSubmit={saveAppointmentLocation}>
-                  <AppointmentLocationFields value={location} onChange={setLocation} />
+                  <AppointmentLocationFields token={token} value={location} onChange={setLocation} />
                   <div className="editor-actions">
                     <button type="button" className="secondary-button" onClick={() => { setEditingAppointment(null); setLocation(null) }}>Cancelar</button>
                     <button type="submit" disabled={savingLocation}>{savingLocation ? 'Salvando…' : 'Salvar local'}</button>
@@ -215,6 +244,7 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
             </article>
           ))}
         </section>
+        {showStudentAcademies && <AcademyPickerModal token={token} selectedId={data.student.academy?.id} onSelect={selectStudentAcademy} onClose={() => setShowStudentAcademies(false)} />}
       </section>
     </main>
   )

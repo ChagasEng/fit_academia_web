@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createStudent } from '../../lib/api'
 import BackButton from '../../components/navigation/BackButton'
+import AcademyPickerModal from '../../components/academies/AcademyPickerModal'
 
 const emptyAddress = { cep: '', estado: '', cidade: '', bairro: '', rua: '', numero: '', complemento: '', referencia: '' }
 
@@ -10,6 +11,8 @@ export default function StudentRegistrationPage({ token, user, onLogout }) {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [loadingCep, setLoadingCep] = useState(false)
+  const [academy, setAcademy] = useState(null)
+  const [showAcademies, setShowAcademies] = useState(false)
 
   function updateAddress(field, value) { setForm((current) => ({ ...current, endereco: { ...current.endereco, [field]: value } })) }
 
@@ -38,9 +41,10 @@ export default function StudentRegistrationPage({ token, user, onLogout }) {
     event.preventDefault()
     setMessage(''); setError('')
     try {
-      await createStudent(token, { nome: form.nome, email: form.email || null, usuario_tipo_id: studentType.id, telefone: { numero: form.telefone, tipo: 'whatsapp' }, endereco: form.endereco })
+      await createStudent(token, { nome: form.nome, email: form.email || null, usuario_tipo_id: studentType.id, academia_id: academy?.id || null, telefone: { numero: form.telefone, tipo: 'whatsapp' }, endereco: form.endereco })
       setMessage('Aluno cadastrado com sucesso.')
       setForm({ nome: '', email: '', telefone: '', endereco: emptyAddress })
+      setAcademy(null)
     } catch (requestError) { setError(requestError.message) }
   }
 
@@ -57,8 +61,13 @@ export default function StudentRegistrationPage({ token, user, onLogout }) {
         <div className="form-grid"><Field label="Nome completo" value={form.nome} onChange={(value) => setForm({ ...form, nome: value })} required /><Field label="E-mail" type="email" value={form.email} onChange={(value) => setForm({ ...form, email: value })} /><Field label="Número do WhatsApp" type="tel" value={form.telefone} onChange={(value) => setForm({ ...form, telefone: value })} required /></div>
         <h2>Endereço</h2>
         <div className="form-grid"><Field label="CEP" value={form.endereco.cep} onChange={changeCep} hint={loadingCep ? 'Buscando endereço...' : 'Digite o CEP para preencher automaticamente'} /><Field label="Estado" value={form.endereco.estado} onChange={(value) => updateAddress('estado', value.toUpperCase())} /><Field label="Cidade" value={form.endereco.cidade} onChange={(value) => updateAddress('cidade', value)} /><Field label="Bairro" value={form.endereco.bairro} onChange={(value) => updateAddress('bairro', value)} /><Field label="Rua" value={form.endereco.rua} onChange={(value) => updateAddress('rua', value)} /><Field label="Número" value={form.endereco.numero} onChange={(value) => updateAddress('numero', value)} /><Field label="Complemento" value={form.endereco.complemento} onChange={(value) => updateAddress('complemento', value)} /><Field label="Referência" value={form.endereco.referencia} onChange={(value) => updateAddress('referencia', value)} /></div>
+        <h2>Academia principal</h2>
+        <p className="form-section-copy">Vincule a academia para o aluno aparecer no mapa. Você também pode deixar sem academia para atendimentos domiciliares.</p>
+        <button type="button" className="academy-picker-trigger" onClick={() => setShowAcademies(true)}><span aria-hidden="true">⌖</span><span><small>SELECIONAR NO MAPA</small><strong>{academy?.nome || 'Escolher academia'}</strong></span><b>›</b></button>
+        {academy && <button type="button" className="remove-academy" onClick={() => setAcademy(null)}>Remover vínculo com {academy.nome}</button>}
         {message && <p className="form-success">{message}</p>}{error && <p className="form-error">{error}</p>}<button type="submit">Salvar aluno</button>
       </form>
+      {showAcademies && <AcademyPickerModal token={token} selectedId={academy?.id} onSelect={setAcademy} onClose={() => setShowAcademies(false)} />}
       </>}
     </section>
   </main>

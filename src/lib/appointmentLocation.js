@@ -1,5 +1,6 @@
 export const emptyAppointmentLocation = {
   local_tipo: 'academia',
+  academia_id: '',
   academia_nome: '',
   local_cep: '',
   local_estado: '',
@@ -65,7 +66,7 @@ export async function findAddressByCep(value, signal) {
 }
 
 export function appointmentLocationLabel(appointment) {
-  if (appointment.local_tipo === 'academia') return appointment.academia_nome || 'Academia não informada'
+  if (appointment.local_tipo === 'academia') return appointment.academy?.nome || appointment.academia_nome || 'Academia não informada'
   if (appointment.local_tipo === 'domicilio') {
     return [
       [appointment.local_rua, appointment.local_numero].filter(Boolean).join(', '),

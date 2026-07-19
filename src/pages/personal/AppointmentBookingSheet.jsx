@@ -28,16 +28,24 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
 
   function changeExistingStudent(id) {
     setStudentId(id)
-    const address = students.find((student) => String(student.id) === String(id))?.addresses?.[0]
+    const student = students.find((item) => String(item.id) === String(id))
+    const address = student?.addresses?.[0]
     if (location.local_tipo === 'domicilio' && address && !location.local_cep) {
       setLocation(locationFromStudentAddress(address))
+    }
+    if (location.local_tipo === 'academia' && student?.academy && !location.academia_id) {
+      setLocation({ ...location, academia_id: student.academy.id, academia_nome: student.academy.nome })
     }
   }
 
   function changeLocation(nextLocation) {
     const switchedToHome = location.local_tipo !== 'domicilio' && nextLocation.local_tipo === 'domicilio'
-    const address = students.find((student) => String(student.id) === String(studentId))?.addresses?.[0]
-    setLocation(switchedToHome && address ? locationFromStudentAddress(address) : nextLocation)
+    const switchedToAcademy = location.local_tipo !== 'academia' && nextLocation.local_tipo === 'academia'
+    const student = students.find((item) => String(item.id) === String(studentId))
+    const address = student?.addresses?.[0]
+    if (switchedToHome && address) return setLocation(locationFromStudentAddress(address))
+    if (switchedToAcademy && student?.academy) return setLocation({ ...nextLocation, academia_id: student.academy.id, academia_nome: student.academy.nome })
+    setLocation(nextLocation)
   }
 
   async function submit(event) {
@@ -53,6 +61,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
         const created = await createStudent(token, {
           nome: newStudent.nome,
           usuario_tipo_id: Number(newStudent.usuario_tipo_id),
+          academia_id: location.local_tipo === 'academia' && location.academia_id ? Number(location.academia_id) : null,
           telefone: { numero: newStudent.telefone, tipo: 'whatsapp' },
           endereco: location.local_tipo === 'domicilio' ? studentAddressFromLocation(location) : {},
         })
@@ -140,7 +149,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
           <input type="time" required value={time} onChange={(event) => setTime(event.target.value)} />
         </label>
 
-        <AppointmentLocationFields value={location} onChange={changeLocation} />
+        <AppointmentLocationFields token={token} value={location} onChange={changeLocation} />
 
         {error && <p className="form-error">{error}</p>}
         <button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Confirmar agendamento'}</button>
