@@ -19,6 +19,13 @@ export default function App() {
   const requestedRole = path.split('/').filter(Boolean)[0]
 
   useEffect(() => {
+    if (session?.token && !requestedRole) {
+      const destination = rolePaths[session.access?.slug]
+      if (destination) window.location.replace(destination)
+    }
+  }, [session, requestedRole])
+
+  useEffect(() => {
     if (!session?.token) return setMenu([])
     getMenu(session.token).then((response) => setMenu(response.items)).catch(() => setMenu([]))
   }, [session])
@@ -27,6 +34,7 @@ export default function App() {
   function handleLogin(nextSession) { saveSession(nextSession); navigate(rolePaths[nextSession.access.slug] || '/') }
   async function handleLogout() { await logout(session.token); clearSession(); navigate('/') }
 
+  if (session?.token && !requestedRole) return null
   if (path === '/cliente') return <><ThemeToggle /><ClientPage /></>
   const allowedRole = requestedRole === 'aluno' ? ['aluno_recorrente', 'aluno_avulso'].includes(session?.access?.slug) : session?.access?.slug === requestedRole
   if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <><ThemeToggle /><LoginPage onLogin={handleLogin} /></>
