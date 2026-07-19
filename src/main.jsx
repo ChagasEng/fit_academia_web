@@ -32,9 +32,9 @@ function App() {
       <section className="presentation" aria-hidden="true">
         <Brand />
         <div className="presentation-copy">
-          <p className="eyebrow">BEM-VINDO DE VOLTA</p>
+          <p className="eyebrow">BEM-VINDO À FIT ACADEMIA</p>
           <h1>Seu ritmo.<br />Sua evolução.</h1>
-          <p>Acompanhe seus treinos e mantenha sua rotina em movimento.</p>
+          <p>Uma plataforma para conectar pessoas, resultados e bem-estar.</p>
         </div>
         <p className="presentation-footer">© {new Date().getFullYear()} Fit Academia</p>
       </section>
@@ -42,9 +42,9 @@ function App() {
       <section className="login-panel" aria-labelledby="login-title">
         <div className="mobile-brand"><Brand /></div>
         <div className="form-heading">
-          <p className="eyebrow">ÁREA DO ALUNO</p>
-          <h2 id="login-title">Entrar na sua conta</h2>
-          <p>Use seus dados para acessar a plataforma.</p>
+          <p className="eyebrow">ACESSO À PLATAFORMA</p>
+          <h2 id="login-title">Acesse sua conta</h2>
+          <p>Informe seus dados para continuar.</p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
