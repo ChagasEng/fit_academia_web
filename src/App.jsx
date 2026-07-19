@@ -20,7 +20,8 @@ export default function App() {
   async function handleLogout() { await logout(session.token); clearSession(); navigate('/') }
 
   if (path === '/cliente') return <ClientPage />
-  if (!session || !requestedRole || !pages[requestedRole] || session.access.slug !== requestedRole) return <LoginPage onLogin={handleLogin} />
+  const allowedRole = requestedRole === 'aluno' ? ['aluno_recorrente', 'aluno_avulso'].includes(session?.access?.slug) : session?.access?.slug === requestedRole
+  if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <LoginPage onLogin={handleLogin} />
 
   const Page = pages[requestedRole]
   return <Page user={session.user} token={session.token} onLogout={handleLogout} />

@@ -17,5 +17,6 @@ export const rolePaths = {
   admin: '/admin',
   personal: '/personal',
   professor: '/professor',
-  aluno: '/aluno',
+  aluno_recorrente: '/aluno',
+  aluno_avulso: '/aluno',
 }

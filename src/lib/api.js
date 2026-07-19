@@ -21,3 +21,14 @@ export async function getMenu(token) {
 export async function logout(token) {
   await fetch(`${apiUrl}/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
 }
+
+export async function createStudent(token, student) {
+  const response = await fetch(`${apiUrl}/personal/alunos`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(student),
+  })
+  const data = await response.json()
+  if (!response.ok) throw new Error(data.message || 'Não foi possível cadastrar o aluno.')
+  return data
+}
