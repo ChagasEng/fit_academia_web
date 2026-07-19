@@ -1,15 +1,6 @@
-import { useEffect, useState } from 'react'
-import { getMenu } from '../../lib/api'
-import FooterBar from '../../components/navigation/FooterBar'
 import BackButton from '../../components/navigation/BackButton'
 
-export default function RoleDashboard({ title, description, user, token, onLogout }) {
-  const [menu, setMenu] = useState([])
-
-  useEffect(() => {
-    getMenu(token).then((response) => setMenu(response.items)).catch(() => setMenu([]))
-  }, [token])
-
+export default function RoleDashboard({ title, description, user, onLogout }) {
   return <main className="dashboard-page">
     <header className="dashboard-header"><div className="header-side"><BackButton /><strong>fit<span>academia</span></strong></div><button onClick={onLogout}>Sair</button></header>
     <section className="dashboard-content">
@@ -18,6 +9,5 @@ export default function RoleDashboard({ title, description, user, token, onLogou
       <p>{description}</p>
       <div className="coming-soon">Módulos desta área em construção.</div>
     </section>
-    {menu.length > 0 && <FooterBar items={menu} />}
   </main>
 }
