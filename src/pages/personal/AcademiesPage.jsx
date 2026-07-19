@@ -30,6 +30,7 @@ export default function AcademiesPage({ token, onLogout }) {
 
   const academies = data?.academies || []
   const filtered = academies.filter((academy) => academy.nome.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')))
+  const mappedAcademies = academies.filter((academy) => academy.latitude !== null && academy.longitude !== null)
 
   const selectAcademy = useCallback(async (academy) => {
     setSelectedId(academy.id)
@@ -59,14 +60,14 @@ export default function AcademiesPage({ token, onLogout }) {
           <div>
             <p className="eyebrow">MAPA DE ACADEMIAS</p>
             <h1>Academias em {data?.city || 'Ponta Grossa'}</h1>
-            <p>{academies.length} academias com localização cadastrada no OpenStreetMap.</p>
+            <p>{academies.length} academias cadastradas · {mappedAcademies.length} com posição confirmada no mapa.</p>
           </div>
           <input type="search" placeholder="Pesquisar academia" value={query} onChange={(event) => setQuery(event.target.value)} />
         </div>
 
         {data?.message && <p className="map-warning">{data.message}</p>}
         {error && <div className="map-warning"><span>{error}</span><button type="button" onClick={load}>Tentar novamente</button></div>}
-        <p className="osm-coverage-note"><strong>Sobre a cobertura:</strong> o mapa mostra apenas estabelecimentos que possuem coordenadas e alguma classificação de academia/fitness no OpenStreetMap. Empresas presentes somente em outras listas públicas não têm uma posição confiável para marcar aqui.</p>
+        <p className="osm-coverage-note"><strong>Sobre a cobertura:</strong> a lista reúne OpenStreetMap e o diretório local de Ponta Grossa. Só marcamos no mapa locais com coordenada confirmada, para não posicionar uma academia no endereço errado.</p>
 
         <div className="academy-page-layout">
           <AcademyMap academies={filtered} selectedId={selectedId} onSelect={selectAcademy} />

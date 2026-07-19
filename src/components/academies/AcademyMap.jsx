@@ -45,8 +45,9 @@ export default function AcademyMap({ academies, selectedId, onSelect, className 
     const points = []
 
     academies.forEach((academy) => {
+      if (academy.latitude === null || academy.longitude === null || academy.latitude === undefined || academy.longitude === undefined) return
       const point = [Number(academy.latitude), Number(academy.longitude)]
-      if (!Number.isFinite(point[0]) || !Number.isFinite(point[1])) return
+      if (!Number.isFinite(point[0]) || !Number.isFinite(point[1]) || point[0] === 0 || point[1] === 0) return
 
       points.push(point)
       const selected = Number(selectedId) === Number(academy.id)

@@ -212,6 +212,8 @@ small { color: #70807c; font-weight: 400; }
 .academy-picker-list button:hover, .academy-picker-list button.selected { color: #0d624d; background: #edf9f3; }
 .academy-picker-list strong, .academy-picker-list span { display: block; }
 .academy-picker-list span { margin-top: .25rem; color: #70807c; font-size: .78rem; font-weight: 400; }
+.academy-picker-list small { margin-top: .35rem; display: inline-block; color: #9a3412; font-size: .7rem; font-weight: 800; }
+.academy-picker-list button.academy-unmapped { background: #fffaf2; }
 .academy-picker-list > p { padding: 1rem; color: #65727f; }
 .academy-picker-modal > small { display: block; margin-top: .8rem; }
 .map-warning { margin: .85rem 0; padding: .75rem .9rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 1px solid #fed7aa; border-radius: .65rem; color: #9a3412; background: #fff7ed; font-size: .84rem; }

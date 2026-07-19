@@ -53,9 +53,10 @@ export default function AcademyPickerModal({ token, selectedId, onSelect, onClos
           <AcademyMap academies={filtered} selectedId={selectedId} onSelect={choose} />
           <div className="academy-picker-list">
             {filtered.map((academy) => (
-              <button type="button" className={Number(selectedId) === Number(academy.id) ? 'selected' : ''} key={academy.id} onClick={() => choose(academy)}>
+              <button type="button" className={`${Number(selectedId) === Number(academy.id) ? 'selected' : ''}${academy.latitude === null || academy.longitude === null ? ' academy-unmapped' : ''}`} key={academy.id} onClick={() => choose(academy)}>
                 <strong>{academy.nome}</strong>
                 <span>{academy.endereco || `${academy.cidade || data?.city} · ${academy.estado || data?.state}`}</span>
+                {(academy.latitude === null || academy.longitude === null) && <small>Sem posição no mapa</small>}
               </button>
             ))}
             {data && filtered.length === 0 && <p>Nenhuma academia encontrada com esse nome.</p>}
