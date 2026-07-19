@@ -32,3 +32,12 @@ export async function createStudent(token, student) {
   if (!response.ok) throw new Error(data.message || 'Não foi possível cadastrar o aluno.')
   return data
 }
+
+async function authorizedGet(path, token) {
+  const response = await fetch(`${apiUrl}${path}`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+  if (!response.ok) throw new Error('Não foi possível carregar os dados.')
+  return response.json()
+}
+
+export function getStudents(token) { return authorizedGet('/personal/alunos', token) }
+export function getAppointments(token, start, end) { return authorizedGet(`/personal/agenda?inicio=${start}&fim=${end}`, token) }

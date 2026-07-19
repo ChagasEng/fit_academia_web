@@ -5,7 +5,7 @@ export default function BackButton({ fallback = '/' }) {
     // A navegação interna recarrega a aplicação; por isso usamos a hierarquia
     // da rota em vez do histórico do WebView, que pode variar entre plataformas.
     if (parts.length > 1) {
-      window.location.assign(`/${parts[0]}`)
+      window.location.assign(`/${parts.slice(0, -1).join('/')}`)
       return
     }
 

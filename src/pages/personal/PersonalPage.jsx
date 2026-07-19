@@ -1,3 +1,10 @@
-import RoleDashboard from '../shared/RoleDashboard'
 import StudentRegistrationPage from './StudentRegistrationPage'
-export default function PersonalPage(props) { return window.location.pathname === '/personal/alunos' ? <StudentRegistrationPage {...props} /> : <RoleDashboard {...props} title="Personal" description="Acompanhe seus alunos, treinos e avaliações." /> }
+import StudentListPage from './StudentListPage'
+import AgendaPage from './AgendaPage'
+
+export default function PersonalPage(props) {
+  const path = window.location.pathname
+  if (path === '/personal/alunos/cadastrar') return <StudentRegistrationPage {...props} />
+  if (path === '/personal/alunos') return <StudentListPage {...props} />
+  return <AgendaPage {...props} />
+}
