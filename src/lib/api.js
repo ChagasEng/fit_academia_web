@@ -39,5 +39,6 @@ async function authorizedGet(path, token) {
   return response.json()
 }
 
-export function getStudents(token) { return authorizedGet('/personal/alunos', token) }
+export function getStudents(token, page = 1, search = '') { return authorizedGet(`/personal/alunos?page=${page}&search=${encodeURIComponent(search)}`, token) }
+export function getStudent(token, id) { return authorizedGet(`/personal/alunos/${id}`, token) }
 export function getAppointments(token, start, end) { return authorizedGet(`/personal/agenda?inicio=${start}&fim=${end}`, token) }
