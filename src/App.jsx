@@ -11,17 +11,24 @@ import AlunoPage from './pages/aluno/AlunoPage'
 import ClientPage from './pages/cliente/ClientPage'
 
 const pages = { admin: AdminPage, personal: PersonalPage, professor: ProfessorPage, aluno: AlunoPage }
+const currentPath = () => window.location.pathname.replace(/\/$/, '') || '/'
 
 export default function App() {
   const [session, setSession] = useState(readSession)
   const [menu, setMenu] = useState([])
-  const path = window.location.pathname.replace(/\/$/, '') || '/'
+  const [path, setPath] = useState(currentPath)
   const requestedRole = path.split('/').filter(Boolean)[0]
+
+  useEffect(() => {
+    const syncPath = () => setPath(currentPath())
+    window.addEventListener('popstate', syncPath)
+    return () => window.removeEventListener('popstate', syncPath)
+  }, [])
 
   useEffect(() => {
     if (session?.token && !requestedRole) {
       const destination = rolePaths[session.access?.slug]
-      if (destination) window.location.replace(destination)
+      if (destination) navigate(destination, true)
     }
   }, [session, requestedRole])
 
@@ -30,9 +37,13 @@ export default function App() {
     getMenu(session.token).then((response) => setMenu(response.items)).catch(() => setMenu([]))
   }, [session])
 
-  function navigate(nextPath) { window.history.pushState({}, '', nextPath); window.location.reload() }
-  function handleLogin(nextSession) { saveSession(nextSession); navigate(rolePaths[nextSession.access.slug] || '/') }
-  async function handleLogout() { await logout(session.token); clearSession(); navigate('/') }
+  function navigate(nextPath, replace = false) {
+    window.history[replace ? 'replaceState' : 'pushState']({}, '', nextPath)
+    setPath(currentPath())
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
+  function handleLogin(nextSession) { saveSession(nextSession); setSession(nextSession); navigate(rolePaths[nextSession.access.slug] || '/') }
+  async function handleLogout() { await logout(session.token); clearSession(); setSession(null); navigate('/') }
 
   if (session?.token && !requestedRole) return null
   if (path === '/cliente') return <><ThemeToggle /><ClientPage /></>

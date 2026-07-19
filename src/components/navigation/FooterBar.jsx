@@ -5,7 +5,8 @@ export default function FooterBar({ items }) {
 
   function navigate(path) {
     window.history.pushState({}, '', path)
-    window.location.reload()
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
   return <nav className="footer-bar" aria-label="Menu principal">
