@@ -33,7 +33,7 @@ button:active { transform: translateY(1px); }
 button:disabled { cursor: wait; opacity: .7; }
 .form-error { margin: .55rem 0 0; color: #b42318; font-size: .85rem; }
 
-.dashboard-page { min-height: 100vh; background: #f7faf9; }
+.dashboard-page { min-height: 100vh; padding-bottom: 5.75rem; background: #f7faf9; }
 .dashboard-header { height: 4.5rem; padding: 0 clamp(1.5rem, 6vw, 6rem); display: flex; align-items: center; justify-content: space-between; color: #f7fcfb; background: #113d3b; }
 .dashboard-header strong { font-family: Manrope, sans-serif; letter-spacing: -.08em; }
 .dashboard-header strong span { color: #86efac; }
@@ -44,6 +44,10 @@ button:disabled { cursor: wait; opacity: .7; }
 .dashboard-content h1 { margin: 0; font-family: Manrope, sans-serif; font-size: clamp(2.5rem, 6vw, 4.5rem); letter-spacing: -.07em; }
 .dashboard-content > p:not(.eyebrow) { max-width: 34rem; color: #65727f; font-size: 1.1rem; line-height: 1.6; }
 .coming-soon { margin-top: 2rem; padding: 1.25rem; border: 1px solid #d5e5df; border-radius: .75rem; color: #367365; background: #eaf7f1; }
+.footer-bar { position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; min-height: 4.8rem; display: flex; justify-content: center; gap: min(7vw, 5rem); padding: .45rem 1rem max(.45rem, env(safe-area-inset-bottom)); border-top: 1px solid #dbe7e3; background: rgba(255, 255, 255, .96); backdrop-filter: blur(12px); }
+.footer-item { width: min(5.7rem, 23vw); height: auto; margin: 0; padding: .25rem .2rem; display: grid; place-items: center; gap: .1rem; border: 0; border-radius: .55rem; color: #70807c; background: transparent; font-size: .68rem; font-weight: 600; }
+.footer-item:hover, .footer-item.active { color: #0e7259; background: #e6f6ef; }
+.footer-icon { height: 1.7rem; display: grid; place-items: center; font-size: 1.45rem; line-height: 1; }
 
 @media (max-width: 760px) {
   .login-page { display: block; background: linear-gradient(180deg, #113d3b 0 12rem, #f8fafc 12rem); }

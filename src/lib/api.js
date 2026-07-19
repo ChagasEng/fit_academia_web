@@ -11,3 +11,13 @@ export async function login(credentials) {
   if (!response.ok) throw new Error(data.message || 'Não foi possível entrar.')
   return data
 }
+
+export async function getMenu(token) {
+  const response = await fetch(`${apiUrl}/auth/menu`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+  if (!response.ok) throw new Error('Não foi possível carregar o menu.')
+  return response.json()
+}
+
+export async function logout(token) {
+  await fetch(`${apiUrl}/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+}
