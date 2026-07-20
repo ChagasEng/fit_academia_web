@@ -12,6 +12,7 @@ import {
   updateStudent,
 } from '../../lib/api'
 import { appointmentLocationLabel, locationFromAppointment } from '../../lib/appointmentLocation'
+import { currencyToCents, formatCurrency } from '../../lib/masks'
 
 const money = (value = 0) => (Number(value || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const today = () => {
@@ -52,13 +53,13 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
 
   async function savePlan(event) {
     event.preventDefault()
-    const amount = Number(form.valor.replace(',', '.'))
-    if (!Number.isFinite(amount) || amount <= 0) return setError('Informe um valor válido para o plano.')
+    const amountInCents = currencyToCents(form.valor)
+    if (!amountInCents) return setError('Informe um valor válido para o plano.')
 
     try {
       setSaving(true)
       setError('')
-      await createContract(token, studentId, { ...form, valor_centavos: Math.round(amount * 100) })
+      await createContract(token, studentId, { ...form, valor_centavos: amountInCents })
       setForm((current) => ({ ...current, valor: '' }))
       await load()
     } catch (requestError) {
@@ -172,7 +173,7 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
             <form onSubmit={savePlan}>
               <label>Plano<input required value={form.titulo} onChange={(event) => setForm({ ...form, titulo: event.target.value })} /></label>
               <div className="form-grid">
-                <label>Valor total<input required inputMode="decimal" placeholder="0,00" value={form.valor} onChange={(event) => setForm({ ...form, valor: event.target.value })} /></label>
+                <label>Valor total<input required inputMode="decimal" placeholder="R$ 0,00" value={form.valor} onChange={(event) => setForm({ ...form, valor: formatCurrency(event.target.value) })} /></label>
                 <label>Parcelas<select value={form.parcelas} onChange={(event) => setForm({ ...form, parcelas: Number(event.target.value) })}>{[1, 2, 3, 4, 6, 12].map((number) => <option key={number} value={number}>{number}x</option>)}</select></label>
                 <label>Pagamento<select value={form.metodo_pagamento} onChange={(event) => setForm({ ...form, metodo_pagamento: event.target.value })}><option value="pix">Pix</option><option value="cartao">Cartão</option><option value="dinheiro">Dinheiro</option></select></label>
                 <label>Primeiro vencimento<input type="date" value={form.inicio_em} onChange={(event) => setForm({ ...form, inicio_em: event.target.value })} /></label>

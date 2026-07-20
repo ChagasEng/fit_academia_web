@@ -58,6 +58,13 @@ export function getStudent(token, id) { return authorizedGet(`/personal/alunos/$
 export function getAppointments(token, start, end) { return authorizedGet(`/personal/agenda?inicio=${start}&fim=${end}`, token) }
 export function getAcademies(token) { return authorizedGet('/personal/academias', token) }
 export function getAcademy(token, id) { return authorizedGet(`/personal/academias/${id}`, token) }
+export function estimateTravel(token, destination) {
+  return request('/personal/agenda/estimar-deslocamento', {
+    method: 'POST',
+    headers: authHeaders(token, true),
+    body: JSON.stringify(destination),
+  }, 'Não foi possível calcular o deslocamento.')
+}
 
 export async function createAppointment(token, appointment) {
   return request('/personal/agenda', { method: 'POST', headers: authHeaders(token, true), body: JSON.stringify(appointment) }, 'Não foi possível salvar o agendamento.')
@@ -69,6 +76,13 @@ export async function updateAppointment(token, id, appointment) {
 export function getPersonalProfile(token) { return authorizedGet('/personal/profile', token) }
 export function getRevenue(token) { return authorizedGet('/personal/financeiro', token) }
 export function getStudentHistory(token, id) { return authorizedGet(`/personal/alunos/${id}/historico`, token) }
+export function createStudentWhatsappContact(token, id, tipo, appointmentId = null) {
+  return request(`/personal/alunos/${id}/contatos`, {
+    method: 'POST',
+    headers: authHeaders(token, true),
+    body: JSON.stringify({ tipo, ...(appointmentId ? { agendamento_id: appointmentId } : {}) }),
+  }, 'Não foi possível preparar a mensagem do WhatsApp.')
+}
 export function updateStudent(token, id, student) { return request(`/personal/alunos/${id}`, { method: 'PATCH', headers: authHeaders(token, true), body: JSON.stringify(student) }, 'Não foi possível atualizar o aluno.') }
 export function createContract(token, id, contract) { return request(`/personal/alunos/${id}/contratos`, { method: 'POST', headers: authHeaders(token, true), body: JSON.stringify(contract) }, 'Não foi possível salvar o plano.') }
 export function markInstallmentPaid(token, id) { return request(`/personal/parcelas/${id}/paga`, { method: 'PATCH', headers: authHeaders(token) }, 'Não foi possível registrar o pagamento.') }

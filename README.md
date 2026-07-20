@@ -18,10 +18,11 @@ VITE_API_URL=http://localhost:8000/api/v1
 
 ## Deploy no Render
 
-Crie um serviço **Web Service** usando o `Dockerfile` deste repositório. Configure a variável de ambiente `VITE_API_URL` com a URL pública da API, por exemplo:
+Crie um serviço **Web Service** usando o `Dockerfile` deste repositório. Configure as variáveis de ambiente com a URL pública da API e a chave do Google Maps:
 
 ```env
 VITE_API_URL=https://fit-academia-api.onrender.com/api/v1
+GOOGLE_MAPS_API_KEY=sua_chave_do_google_maps
 ```
 
-A URL é injetada quando o container inicia, portanto pode ser alterada sem recompilar o frontend.
+As variáveis são injetadas quando o container inicia, portanto podem ser alteradas sem recompilar o frontend. Cadastre a chave como segredo no painel do Render; ela não deve ser enviada ao Git.

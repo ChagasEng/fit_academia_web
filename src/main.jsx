@@ -3,6 +3,5 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import AppErrorBoundary from './components/errors/AppErrorBoundary'
 import './styles.css'
-import 'leaflet/dist/leaflet.css'
 
 createRoot(document.getElementById('root')).render(<StrictMode><AppErrorBoundary><App /></AppErrorBoundary></StrictMode>)

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import BackButton from '../../components/navigation/BackButton'
 import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import { getPersonalProfile, getRevenue, updatePersonalProfile } from '../../lib/api'
+import { formatCep, formatCref, onlyDigits } from '../../lib/masks'
 
 const emptyProfile = {
   name: '',
@@ -101,19 +102,19 @@ export default function ProfilePage({ token, onLogout }) {
         )}
         <form className="student-form profile-form" onSubmit={submit}>
           <label>Nome completo<input required value={profile.name} onChange={(event) => update('name', event.target.value)} /></label>
-          <label>CREF<input required placeholder="Ex.: CREF 000000-G/SP" value={profile.cref || ''} onChange={(event) => update('cref', event.target.value)} /></label>
+          <label>CREF<input required inputMode="text" maxLength={15} placeholder="CREF 000000-G/PR" value={formatCref(profile.cref || '')} onChange={(event) => update('cref', formatCref(event.target.value))} /></label>
           <label>E-mail<input disabled value={profile.email || ''} /></label>
 
           <h2>Endereço profissional</h2>
           <p className="form-section-copy">A cidade deste endereço define automaticamente o limite municipal usado no mapa de academias.</p>
           <div className="form-grid">
-            <label>CEP<input inputMode="numeric" maxLength="8" value={profile.cep || ''} onChange={(event) => update('cep', event.target.value.replace(/\D/g, '').slice(0, 8))} /><small>{loadingCep ? 'Buscando endereço…' : 'Preenchimento automático pelo ViaCEP.'}</small></label>
-            <label>Estado<input required maxLength="2" value={profile.estado || ''} onChange={(event) => update('estado', event.target.value.toUpperCase())} /></label>
+            <label>CEP<input inputMode="numeric" autoComplete="postal-code" maxLength="9" placeholder="00000-000" value={formatCep(profile.cep || '')} onChange={(event) => update('cep', onlyDigits(event.target.value).slice(0, 8))} /><small>{loadingCep ? 'Buscando endereço…' : 'Preenchimento automático pelo ViaCEP.'}</small></label>
+            <label>Estado<input required maxLength="2" value={profile.estado || ''} onChange={(event) => update('estado', event.target.value.replace(/[^a-z]/gi, '').toUpperCase())} /></label>
             <label>Cidade<input required value={profile.cidade || ''} onChange={(event) => update('cidade', event.target.value)} /></label>
             <label>Bairro<input value={profile.bairro || ''} onChange={(event) => update('bairro', event.target.value)} /></label>
             <label>Rua<input value={profile.rua || ''} onChange={(event) => update('rua', event.target.value)} /></label>
-            <label>Número<input value={profile.numero || ''} onChange={(event) => update('numero', event.target.value)} /></label>
-            <label>Complemento<input value={profile.complemento || ''} onChange={(event) => update('complemento', event.target.value)} /></label>
+            <label>Número<input inputMode="text" maxLength="20" value={profile.numero || ''} onChange={(event) => update('numero', event.target.value)} /></label>
+            <label>Complemento<input maxLength="255" value={profile.complemento || ''} onChange={(event) => update('complemento', event.target.value)} /></label>
           </div>
 
           {message && <p className="form-success">{message}</p>}

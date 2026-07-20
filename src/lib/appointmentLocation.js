@@ -10,11 +10,18 @@ export const emptyAppointmentLocation = {
   local_numero: '',
   local_complemento: '',
   local_referencia: '',
+  deslocamento_antes_minutos: undefined,
+  deslocamento_depois_minutos: undefined,
+  local_latitude: undefined,
+  local_longitude: undefined,
+  rota_distancia_metros: undefined,
+  rota_duracao_segundos: undefined,
+  rota_calculada_em: undefined,
 }
 
 export function locationFromAppointment(appointment = {}) {
   return Object.fromEntries(
-    Object.keys(emptyAppointmentLocation).map((key) => [key, appointment[key] || emptyAppointmentLocation[key]]),
+    Object.keys(emptyAppointmentLocation).map((key) => [key, appointment[key] ?? emptyAppointmentLocation[key]]),
   )
 }
 

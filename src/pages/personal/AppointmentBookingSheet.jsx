@@ -6,6 +6,7 @@ import {
   locationFromStudentAddress,
   studentAddressFromLocation,
 } from '../../lib/appointmentLocation'
+import { formatPhone, onlyDigits } from '../../lib/masks'
 
 const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
@@ -177,7 +178,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
             </label>
             <label>
               WhatsApp
-              <input required inputMode="tel" value={newStudent.telefone} onChange={(event) => setNewStudent({ ...newStudent, telefone: event.target.value })} />
+              <input required type="tel" inputMode="tel" autoComplete="tel" placeholder="(00) 00000-0000" value={formatPhone(newStudent.telefone)} onChange={(event) => setNewStudent({ ...newStudent, telefone: onlyDigits(event.target.value).slice(0, 13) })} />
             </label>
             <label>
               Tipo

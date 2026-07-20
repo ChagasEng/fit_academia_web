@@ -94,7 +94,7 @@ export default function AgendaPage({ token, onLogout }) {
       </section>
       {selectedDay && <section className="day-sheet" role="dialog" aria-modal="true" aria-label="Agendamentos do dia"><div className="day-sheet-header"><div><p className="eyebrow">AGENDA DO DIA</p><h2>{selectedDay.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</h2></div><button onClick={() => setSelectedDay(null)} aria-label="Fechar lista">×</button></div><button className="new-appointment" onClick={() => setBookingDay(selectedDay)}>+ Novo agendamento</button><div className="day-appointments">{selectedAppointments.map((item) => <button key={item.id} onClick={() => openStudent(item.student?.id)}><time>{new Date(item.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time><div><strong>{item.titulo}</strong><span>{item.student?.nome || 'Atendimento'}</span></div></button>)}{selectedAppointments.length === 0 && <p>Nenhum aluno agendado neste dia.</p>}</div></section>}
       {bookingDay && <AppointmentBookingSheet token={token} day={bookingDay} onClose={() => setBookingDay(null)} onSaved={() => { setBookingDay(null); setSelectedDay(null); setRefresh((value) => value + 1) }} />}
-      {selectedStudent && <StudentDetailsSheet student={selectedStudent} onClose={() => setSelectedStudent(null)} />}
+      {selectedStudent && <StudentDetailsSheet student={selectedStudent} token={token} onClose={() => setSelectedStudent(null)} />}
     </main>
   )
 }

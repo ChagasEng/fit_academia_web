@@ -1,82 +1,85 @@
 import { useEffect, useRef, useState } from 'react'
-import L from 'leaflet'
+import { loadGoogleMaps } from '../../lib/googleMaps'
+
+const defaultCenter = { lat: -25.0945, lng: -50.1633 }
 
 export default function AcademyMap({ academies, selectedId, onSelect, className = '' }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
-  const layerRef = useRef(null)
-  const [mapError, setMapError] = useState(false)
+  const markersRef = useRef([])
+  const [mapError, setMapError] = useState('')
+  const [mapReady, setMapReady] = useState(false)
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return undefined
-
-    let resizeObserver
-    try {
-      const map = L.map(containerRef.current, { zoomControl: true }).setView([-25.0945, -50.1633], 13)
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map)
-      mapRef.current = map
-      layerRef.current = L.layerGroup().addTo(map)
-      if ('ResizeObserver' in window) {
-        resizeObserver = new ResizeObserver(() => map.invalidateSize({ animate: false }))
-        resizeObserver.observe(containerRef.current)
-      }
-      map.whenReady(() => window.setTimeout(() => map.invalidateSize({ animate: false }), 120))
-    } catch {
-      setMapError(true)
-    }
+    let active = true
+    loadGoogleMaps()
+      .then((maps) => {
+        if (!active || !containerRef.current) return
+        mapRef.current = new maps.Map(containerRef.current, {
+          center: defaultCenter,
+          zoom: 13,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          clickableIcons: false,
+        })
+        setMapReady(true)
+      })
+      .catch((error) => { if (active) setMapError(error.message) })
 
     return () => {
-      resizeObserver?.disconnect()
-      mapRef.current?.remove()
+      active = false
+      markersRef.current.forEach((marker) => marker.setMap(null))
+      markersRef.current = []
       mapRef.current = null
-      layerRef.current = null
     }
   }, [])
 
   useEffect(() => {
     const map = mapRef.current
-    const layer = layerRef.current
-    if (!map || !layer) return
+    const maps = window.google?.maps
+    if (!map || !maps) return
 
-    layer.clearLayers()
-    const points = []
+    markersRef.current.forEach((marker) => marker.setMap(null))
+    const bounds = new maps.LatLngBounds()
+    let hasPoints = false
 
-    academies.forEach((academy) => {
-      if (academy.latitude === null || academy.longitude === null || academy.latitude === undefined || academy.longitude === undefined) return
-      const point = [Number(academy.latitude), Number(academy.longitude)]
-      if (!Number.isFinite(point[0]) || !Number.isFinite(point[1]) || point[0] === 0 || point[1] === 0) return
+    markersRef.current = academies.flatMap((academy) => {
+      const latitude = Number(academy.latitude)
+      const longitude = Number(academy.longitude)
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || !latitude || !longitude) return []
 
-      points.push(point)
       const selected = Number(selectedId) === Number(academy.id)
-      const studentsCount = Number.isFinite(Number(academy.students_count)) ? Number(academy.students_count) : 0
-      const precision = ['confirmada', 'aproximada', 'revisar'].includes(academy.localizacao_precisao?.toLowerCase())
-        ? academy.localizacao_precisao.toLowerCase()
-        : 'osm'
-      const icon = L.divIcon({
-        className: '',
-        html: `<span class="academy-map-marker precision-${precision}${selected ? ' selected' : ''}" aria-hidden="true"><b>${studentsCount}</b></span>`,
-        iconSize: [34, 42],
-        iconAnchor: [17, 40],
+      const studentsCount = Number.isFinite(Number(academy.students_count)) ? String(academy.students_count) : '0'
+      const marker = new maps.Marker({
+        map,
+        position: { lat: latitude, lng: longitude },
+        title: academy.nome || 'Academia',
+        label: { text: studentsCount, color: '#ffffff', fontWeight: '700' },
+        icon: {
+          path: maps.SymbolPath.CIRCLE,
+          fillColor: selected ? '#0d624d' : '#137d62',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: selected ? 4 : 2,
+          scale: selected ? 15 : 12,
+        },
       })
-      const tooltip = document.createElement('span')
-      tooltip.textContent = academy.nome || 'Academia'
-      L.marker(point, { icon, title: academy.nome, zIndexOffset: selected ? 1000 : 0 })
-        .bindTooltip(tooltip, { direction: 'top', offset: [0, -34] })
-        .on('click', () => onSelect(academy))
-        .addTo(layer)
+      marker.addListener('click', () => onSelect(academy))
+      bounds.extend(marker.getPosition())
+      hasPoints = true
+      return [marker]
     })
 
-    if (points.length === 1) map.setView(points[0], 15)
-    if (points.length > 1) map.fitBounds(points, { padding: [35, 35], maxZoom: 15 })
-    window.setTimeout(() => map.invalidateSize(), 0)
-  }, [academies, onSelect, selectedId])
+    if (hasPoints) {
+      if (markersRef.current.length === 1) map.setCenter(bounds.getCenter())
+      else map.fitBounds(bounds, 35)
+    }
+  }, [academies, mapReady, onSelect, selectedId])
 
   if (mapError) {
-    return <div className={`academy-map academy-map-error ${className}`}><strong>Não foi possível carregar o mapa dentro do sistema.</strong><a href="https://www.openstreetmap.org/#map=13/-25.0945/-50.1633" target="_blank" rel="noreferrer">Abrir no OpenStreetMap</a></div>
+    return <div className={`academy-map academy-map-error ${className}`}><strong>{mapError}</strong><a href="https://www.google.com/maps/search/?api=1&query=-25.0945,-50.1633" target="_blank" rel="noreferrer">Abrir no Google Maps</a></div>
   }
 
-  return <div ref={containerRef} className={`academy-map ${className}`} aria-label="Mapa das academias" />
+  return <div ref={containerRef} className={`academy-map ${className}`} aria-label="Mapa das academias no Google Maps" />
 }

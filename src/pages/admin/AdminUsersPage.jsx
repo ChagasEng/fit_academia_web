@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import BackButton from '../../components/navigation/BackButton'
 import { createAdminUser, getAdminUsers, markPersonalSubscriptionPaid } from '../../lib/api'
+import { formatCref } from '../../lib/masks'
 
 const roles = [
   { id: 2, label: 'Personal', description: 'Atende e acompanha alunos individualmente.' },
@@ -101,7 +102,7 @@ export default function AdminUsersPage({ token, user, onLogout }) {
           <div><span className="admin-section-number">2</span><h2>Dados do profissional</h2></div>
           <div className="form-grid">
             <Field label="Nome completo" value={form.name} onChange={(value) => update('name', value)} autoComplete="name" required />
-            <Field label="CREF" value={form.cref} onChange={(value) => update('cref', value.toUpperCase())} placeholder="Ex.: CREF 123456-G/PR" required />
+            <Field label="CREF" value={formatCref(form.cref)} onChange={(value) => update('cref', formatCref(value))} placeholder="CREF 123456-G/PR" maxLength={15} required />
             <Field label="E-mail de acesso" type="email" value={form.email} onChange={(value) => update('email', value)} autoComplete="email" required />
           </div>
 

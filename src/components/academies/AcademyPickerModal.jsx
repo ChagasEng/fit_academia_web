@@ -8,7 +8,7 @@ const precisionLabel = (academy) => {
   if (academy.localizacao_precisao === 'CONFIRMADA') return 'Localização confirmada'
   if (academy.localizacao_precisao === 'APROXIMADA') return 'Localização aproximada'
   if (academy.localizacao_precisao === 'REVISAR') return 'Localização a revisar'
-  return 'Localização via OpenStreetMap'
+  return 'Localização disponível no Google Maps'
 }
 
 export default function AcademyPickerModal({ token, selectedId, onSelect, onClose }) {
@@ -72,7 +72,7 @@ export default function AcademyPickerModal({ token, selectedId, onSelect, onClos
           </div>
         </div>
 
-        <small>Diretório local e dados de localização © contribuidores do OpenStreetMap.</small>
+        <small>Mapa fornecido pelo Google Maps. Diretório local de academias.</small>
       </div>
     </section>
   )

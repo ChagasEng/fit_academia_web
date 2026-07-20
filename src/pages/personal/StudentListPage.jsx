@@ -102,7 +102,7 @@ export default function StudentListPage({ token, onLogout }) {
         )}
       </section>
 
-      {selected && <StudentDetailsSheet student={selected} onClose={() => setSelected(null)} />}
+      {selected && <StudentDetailsSheet student={selected} token={token} onClose={() => setSelected(null)} />}
     </main>
   )
 }
