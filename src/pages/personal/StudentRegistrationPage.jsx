@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createStudent } from '../../lib/api'
 import BackButton from '../../components/navigation/BackButton'
+import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import AcademyPickerModal from '../../components/academies/AcademyPickerModal'
 
 const emptyAddress = { cep: '', estado: '', cidade: '', bairro: '', rua: '', numero: '', complemento: '', referencia: '' }
@@ -49,7 +50,7 @@ export default function StudentRegistrationPage({ token, user, onLogout }) {
   }
 
   return <main className="dashboard-page registration-page">
-    <header className="dashboard-header"><div className="header-side"><BackButton fallback="/personal" /><strong>fit<span>academia</span></strong></div><button onClick={onLogout}>Sair</button></header>
+    <header className="dashboard-header"><div className="header-side"><BackButton fallback="/personal" /><strong>fit<span>academia</span></strong></div><div className="header-actions"><StudentQuickSearch token={token} /><button onClick={onLogout}>Sair</button></div></header>
     <section className="registration-content">
       <p className="eyebrow">PERSONAL · {(user?.name || 'USUÁRIO').toUpperCase()}</p>
       <h1>Novo aluno</h1><p>Cadastre os dados básicos. O endereço pode ser preenchido pelo CEP ou manualmente.</p>

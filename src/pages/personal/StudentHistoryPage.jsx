@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import AppointmentLocationFields from '../../components/appointments/AppointmentLocationFields'
 import AcademyPickerModal from '../../components/academies/AcademyPickerModal'
 import BackButton from '../../components/navigation/BackButton'
+import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import {
   createContract,
   createStudentNote,
@@ -114,7 +115,7 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
     return (
       <main className="dashboard-page">
         <header className="dashboard-header">
-          <div className="header-side"><BackButton fallback="/personal/alunos" /><strong>fit<span>academia</span></strong></div>
+          <div className="header-side"><BackButton fallback="/personal/alunos" /><strong>fit<span>academia</span></strong></div><div className="header-actions"><StudentQuickSearch token={token} /><button onClick={onLogout}>Sair</button></div>
         </header>
         <section className="registration-content">
           <p className="form-error">{error}</p>
@@ -138,7 +139,7 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
     <main className="dashboard-page registration-page">
       <header className="dashboard-header">
         <div className="header-side"><BackButton fallback="/personal/alunos" /><strong>fit<span>academia</span></strong></div>
-        <button onClick={onLogout}>Sair</button>
+        <div className="header-actions"><StudentQuickSearch token={token} /><button onClick={onLogout}>Sair</button></div>
       </header>
 
       <section className="registration-content history-page">

@@ -59,6 +59,12 @@ export default function AgendaPage({ token, onLogout }) {
       setSelectedDay(day)
     }
   }
+  function openTodaySummary() {
+    const currentDay = startOfDay(new Date())
+    const isInVisibleWeek = currentDay >= days[0] && currentDay <= days[6]
+    if (!isInVisibleWeek) setWeek(currentDay)
+    setSelectedDay(currentDay)
+  }
   function eventCards(day, hour) { return appointments.filter((item) => { const start = new Date(item.inicio); return dateKey(start) === dateKey(day) && start.getHours() === hour }).map((item) => <button className="calendar-event" key={item.id} onClick={(event) => { event.stopPropagation(); openStudent(item.student?.id) }}><strong>{item.titulo}</strong><span>{item.student?.nome || 'Atendimento'}</span><StudentTypeBadge type={item.student?.type} /></button>) }
 
   return (
@@ -69,7 +75,7 @@ export default function AgendaPage({ token, onLogout }) {
       </header>
       <section className="agenda-content">
         <div className="agenda-toolbar">
-          <div><p className="eyebrow">AGENDA</p><h1>Minha semana</h1></div>
+          <div><p className="eyebrow">AGENDA</p><div className="agenda-title-row"><h1>Minha semana</h1><button type="button" className="today-summary-button" onClick={openTodaySummary}>Resumo do dia</button></div></div>
           <div className="agenda-actions">
             <label className="agenda-date-picker"><span>Ir para data</span><input type="date" value={dateKey(week)} onChange={(event) => event.target.value && setWeek(startOfDay(new Date(`${event.target.value}T00:00:00`)))} /></label>
             <button aria-label="Semana anterior" onClick={() => setWeek(addDays(week, -7))}>‹</button>

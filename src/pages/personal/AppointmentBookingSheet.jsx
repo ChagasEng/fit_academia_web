@@ -15,6 +15,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   const [studentId, setStudentId] = useState('')
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [studentSearch, setStudentSearch] = useState('')
+  const [studentPickerOpen, setStudentPickerOpen] = useState(false)
   const [loadingStudents, setLoadingStudents] = useState(false)
   const [newStudent, setNewStudent] = useState({ nome: '', telefone: '', usuario_tipo_id: '4' })
   const [time, setTime] = useState('08:00')
@@ -55,6 +56,12 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
     if (location.local_tipo === 'academia' && student?.academy && !location.academia_id) {
       setLocation({ ...location, academia_id: student.academy.id, academia_nome: student.academy.nome })
     }
+  }
+
+  function selectExistingStudent(student) {
+    changeExistingStudent(student.id)
+    setStudentSearch(student.nome || '')
+    setStudentPickerOpen(false)
   }
 
   function changeLocation(nextLocation) {
@@ -138,18 +145,28 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
         {mode === 'existing' ? (
           <div className="booking-student-picker">
             <label>
-              Pesquisar aluno
-              <input type="search" value={studentSearch} onChange={(event) => setStudentSearch(event.target.value)} placeholder="Digite o nome do aluno" />
-              <small>{loadingStudents ? 'Pesquisando…' : 'A lista é atualizada conforme você digita.'}</small>
-            </label>
-            <label>
               Aluno
-              <select required value={studentId} onChange={(event) => changeExistingStudent(event.target.value)}>
-                <option value="">Selecione o aluno</option>
-                {selectedStudent && !students.some((student) => String(student.id) === String(selectedStudent.id)) && <option value={selectedStudent.id}>{selectedStudent.nome} — {selectedStudent.type?.nome}</option>}
-                {students.map((student) => <option key={student.id} value={student.id}>{student.nome} — {student.type?.nome}</option>)}
-              </select>
-              {!loadingStudents && students.length === 0 && <small>Nenhum aluno encontrado com esse nome.</small>}
+              <input
+                type="search"
+                role="combobox"
+                aria-expanded={studentPickerOpen}
+                aria-controls="appointment-student-options"
+                value={studentSearch}
+                onFocus={() => setStudentPickerOpen(true)}
+                onChange={(event) => {
+                  setStudentSearch(event.target.value)
+                  setStudentId('')
+                  setSelectedStudent(null)
+                  setStudentPickerOpen(true)
+                }}
+                placeholder="Pesquise e selecione o aluno"
+              />
+              <input type="hidden" required value={studentId} onChange={() => {}} />
+              {studentPickerOpen && <div id="appointment-student-options" className="booking-student-options" role="listbox">
+                {students.map((student) => <button type="button" role="option" aria-selected={String(student.id) === String(studentId)} key={student.id} onMouseDown={(event) => event.preventDefault()} onClick={() => selectExistingStudent(student)}><strong>{student.nome}</strong><span>{student.type?.nome || 'Tipo não informado'}</span></button>)}
+                {loadingStudents && <small>Pesquisando…</small>}
+                {!loadingStudents && students.length === 0 && <small>Nenhum aluno encontrado com esse nome.</small>}
+              </div>}
             </label>
           </div>
         ) : (

@@ -3,6 +3,7 @@ import { getStudent, getStudents } from '../../lib/api'
 import BackButton from '../../components/navigation/BackButton'
 import StudentDetailsSheet from '../../components/students/StudentDetailsSheet'
 import StudentTypeBadge from '../../components/students/StudentTypeBadge'
+import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 
 export default function StudentListPage({ token, onLogout }) {
   const [students, setStudents] = useState([])
@@ -55,7 +56,7 @@ export default function StudentListPage({ token, onLogout }) {
           <BackButton fallback="/personal" />
           <strong>fit<span>academia</span></strong>
         </div>
-        <button onClick={onLogout}>Sair</button>
+        <div className="header-actions"><StudentQuickSearch token={token} /><button onClick={onLogout}>Sair</button></div>
       </header>
 
       <section className="registration-content">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import BackButton from '../../components/navigation/BackButton'
+import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import { getPersonalProfile, getRevenue, updatePersonalProfile } from '../../lib/api'
 
 const emptyProfile = {
@@ -86,7 +87,7 @@ export default function ProfilePage({ token, onLogout }) {
     <main className="dashboard-page registration-page">
       <header className="dashboard-header">
         <div className="header-side"><BackButton fallback="/personal" /><strong>fit<span>academia</span></strong></div>
-        <button onClick={onLogout}>Sair</button>
+        <div className="header-actions"><StudentQuickSearch token={token} /><button onClick={onLogout}>Sair</button></div>
       </header>
       <section className="registration-content">
         <p className="eyebrow">MEU PERFIL</p>

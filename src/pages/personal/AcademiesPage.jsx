@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import AcademyMap from '../../components/academies/AcademyMap'
 import BackButton from '../../components/navigation/BackButton'
+import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import { getAcademies, getAcademy } from '../../lib/api'
 import { searchText } from '../../lib/text'
 
@@ -62,7 +63,7 @@ export default function AcademiesPage({ token, onLogout }) {
     <main className="dashboard-page academy-page">
       <header className="dashboard-header">
         <div className="header-side"><BackButton fallback="/personal" /><strong>fit<span>academia</span></strong></div>
-        <button onClick={onLogout}>Sair</button>
+        <div className="header-actions"><StudentQuickSearch token={token} /><button onClick={onLogout}>Sair</button></div>
       </header>
 
       <section className="academy-page-content">
