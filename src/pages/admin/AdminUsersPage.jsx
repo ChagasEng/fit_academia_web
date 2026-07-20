@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import BackButton from '../../components/navigation/BackButton'
 import { createAdminUser, getAdminUsers, markPersonalSubscriptionPaid } from '../../lib/api'
+import { formatCalendarDate } from '../../lib/text'
 import { formatCref } from '../../lib/masks'
 
 const roles = [
@@ -70,7 +71,7 @@ export default function AdminUsersPage({ token, user, onLogout }) {
     try {
       const response = await markPersonalSubscriptionPaid(token, professional.id)
       setUsers((current) => current.map((item) => item.id === professional.id ? { ...item, subscription: response.subscription } : item))
-      setMessage(`Pagamento de ${professional.name} confirmado. Acesso válido até ${formatDate(response.subscription.pago_ate)}.`)
+      setMessage(`Pagamento de ${professional.name} confirmado. Acesso válido até ${formatCalendarDate(response.subscription.pago_ate)}.`)
     } catch (requestError) {
       setError(requestError.message)
     } finally {
@@ -146,17 +147,12 @@ function Field({ label, type = 'text', value, onChange, ...inputProps }) {
   return <label>{label}<input {...inputProps} type={type} value={value} onChange={(event) => onChange(event.target.value)} /></label>
 }
 
-function formatDate(value) {
-  if (!value) return '—'
-  return new Date(`${value}T00:00:00`).toLocaleDateString('pt-BR')
-}
-
 function subscriptionLabel(status) {
   return { pago: 'Pago', devendo: 'Devendo', bloqueado: 'Bloqueado' }[status] || status
 }
 
 function subscriptionDescription(subscription) {
-  if (subscription.status === 'pago') return `Válido até ${formatDate(subscription.pago_ate)}`
-  if (subscription.status === 'devendo') return `Acesso em carência até ${formatDate(subscription.carencia_ate)}`
-  return `Carência encerrada em ${formatDate(subscription.carencia_ate)}`
+  if (subscription.status === 'pago') return `Válido até ${formatCalendarDate(subscription.pago_ate)}`
+  if (subscription.status === 'devendo') return `Acesso em carência até ${formatCalendarDate(subscription.carencia_ate)}`
+  return `Carência encerrada em ${formatCalendarDate(subscription.carencia_ate)}`
 }

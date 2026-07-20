@@ -13,6 +13,7 @@ import {
 } from '../../lib/api'
 import { appointmentLocationLabel, locationFromAppointment } from '../../lib/appointmentLocation'
 import { currencyToCents, formatCurrency } from '../../lib/masks'
+import { formatCalendarDate } from '../../lib/text'
 
 const money = (value = 0) => (Number(value || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const today = () => {
@@ -194,7 +195,7 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
               <article className="payment-row" key={item.id}>
                 <div>
                   <strong>{item.contract.titulo} · {item.numero}ª parcela</strong>
-                  <span>Vence {new Date(`${item.vencimento_em}T12:00`).toLocaleDateString('pt-BR')} · {item.metodo_pagamento}</span>
+                  <span>Vence {formatCalendarDate(item.vencimento_em)} · {item.metodo_pagamento}</span>
                 </div>
                 <b>{money(item.valor_centavos)}</b>
                 {item.pago_em ? (

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getPersonalSubscription } from '../../lib/api'
+import { formatCalendarDate } from '../../lib/text'
 
 export default function SubscriptionBlockedPage({ token, subscription, onReactivated, onLogout }) {
   const [status, setStatus] = useState(subscription)
@@ -27,7 +28,7 @@ export default function SubscriptionBlockedPage({ token, subscription, onReactiv
       <p className="eyebrow">ACESSO TEMPORARIAMENTE BLOQUEADO</p>
       <h1>Mensalidade pendente</h1>
       <p>O período de carência terminou. Entre em contato com o administrador para regularizar a mensalidade e liberar novamente seu acesso.</p>
-      {status?.carencia_ate && <div className="subscription-blocked-info"><span>Carência encerrada em</span><strong>{new Date(`${status.carencia_ate}T00:00:00`).toLocaleDateString('pt-BR')}</strong></div>}
+      {status?.carencia_ate && <div className="subscription-blocked-info"><span>Carência encerrada em</span><strong>{formatCalendarDate(status.carencia_ate)}</strong></div>}
       {message && <p className="form-error" role="status">{message}</p>}
       <button type="button" onClick={checkPayment} disabled={checking}>{checking ? 'Verificando...' : 'Já paguei — verificar acesso'}</button>
       <button className="secondary-button" type="button" onClick={onLogout}>Sair da conta</button>

@@ -102,7 +102,10 @@ export default function StudentListPage({ token, onLogout }) {
         )}
       </section>
 
-      {selected && <StudentDetailsSheet student={selected} token={token} onClose={() => setSelected(null)} />}
+      {selected && <StudentDetailsSheet student={selected} token={token} onClose={() => setSelected(null)} onUpdated={(updated) => {
+        setSelected(updated)
+        setStudents((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item))
+      }} />}
     </main>
   )
 }

@@ -19,6 +19,7 @@ export default function AgendaPage({ token, onLogout }) {
   const [selectedDay, setSelectedDay] = useState(null)
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [bookingDay, setBookingDay] = useState(null)
+  const [routeMenuAppointmentId, setRouteMenuAppointmentId] = useState(null)
   const [refresh, setRefresh] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -65,6 +66,23 @@ export default function AgendaPage({ token, onLogout }) {
     if (!isInVisibleWeek) setWeek(currentDay)
     setSelectedDay(currentDay)
   }
+
+  function routeDestination(appointment) {
+    if (appointment.local_tipo === 'academia') {
+      return appointment.academy?.endereco || [appointment.academia_nome || appointment.academy?.nome, appointment.academy?.cidade, appointment.academy?.estado].filter(Boolean).join(', ')
+    }
+
+    return [appointment.local_rua, appointment.local_numero, appointment.local_bairro, appointment.local_cidade, appointment.local_estado, appointment.local_cep].filter(Boolean).join(', ')
+  }
+
+  function openRoute(appointment, provider) {
+    const destination = routeDestination(appointment)
+    if (!destination) return
+    const query = encodeURIComponent(destination)
+    const url = provider === 'waze' ? `https://www.waze.com/ul?q=${query}&navigate=yes` : `https://www.google.com/maps/dir/?api=1&destination=${query}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+    setRouteMenuAppointmentId(null)
+  }
   function eventCards(day, hour) { return appointments.filter((item) => { const start = new Date(item.inicio); return dateKey(start) === dateKey(day) && start.getHours() === hour }).map((item) => <button className="calendar-event" key={item.id} onClick={(event) => { event.stopPropagation(); openStudent(item.student?.id) }}><strong>{item.titulo}</strong><span>{item.student?.nome || 'Atendimento'}</span><StudentTypeBadge type={item.student?.type} /></button>) }
 
   return (
@@ -92,9 +110,13 @@ export default function AgendaPage({ token, onLogout }) {
           {hours.map((hour) => <div className="calendar-row" key={hour}><div className="calendar-hour">{String(hour).padStart(2, '0')}:00</div>{days.map((day) => <div role="button" tabIndex="0" onClick={(event) => selectCalendarCell(event, day)} onKeyDown={(event) => selectCalendarCell(event, day)} className={dateKey(day) === today ? 'calendar-cell today-cell' : 'calendar-cell'} key={`${dateKey(day)}-${hour}`}>{eventCards(day, hour)}</div>)}</div>)}
         </div>
       </section>
-      {selectedDay && <section className="day-sheet" role="dialog" aria-modal="true" aria-label="Agendamentos do dia"><div className="day-sheet-header"><div><p className="eyebrow">AGENDA DO DIA</p><h2>{selectedDay.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</h2></div><button onClick={() => setSelectedDay(null)} aria-label="Fechar lista">×</button></div><button className="new-appointment" onClick={() => setBookingDay(selectedDay)}>+ Novo agendamento</button><div className="day-appointments">{selectedAppointments.map((item) => <button key={item.id} onClick={() => openStudent(item.student?.id)}><time>{new Date(item.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time><div><strong>{item.titulo}</strong><span>{item.student?.nome || 'Atendimento'}</span></div></button>)}{selectedAppointments.length === 0 && <p>Nenhum aluno agendado neste dia.</p>}</div></section>}
+      {selectedDay && <section className="day-sheet" role="dialog" aria-modal="true" aria-label="Agendamentos do dia"><div className="day-sheet-header"><div><p className="eyebrow">AGENDA DO DIA</p><h2>{selectedDay.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</h2></div><button onClick={() => setSelectedDay(null)} aria-label="Fechar lista">×</button></div><button className="new-appointment" onClick={() => setBookingDay(selectedDay)}>+ Novo agendamento</button><div className="day-appointments">{selectedAppointments.map((item) => {
+        const destination = routeDestination(item)
+        const isRouteMenuOpen = routeMenuAppointmentId === item.id
+        return <article key={item.id}><button type="button" className="day-appointment-details" onClick={() => openStudent(item.student?.id)}><time>{new Date(item.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time><div><strong>{item.titulo}</strong><span>{item.student?.nome || 'Atendimento'}</span></div></button>{destination && <div className="day-route-actions"><button type="button" className="day-route-trigger" onClick={() => setRouteMenuAppointmentId(isRouteMenuOpen ? null : item.id)}>IR</button>{isRouteMenuOpen && <span><button type="button" onClick={() => openRoute(item, 'maps')}>Maps</button><button type="button" onClick={() => openRoute(item, 'waze')}>Waze</button></span>}</div>}</article>
+      })}{selectedAppointments.length === 0 && <p>Nenhum aluno agendado neste dia.</p>}</div></section>}
       {bookingDay && <AppointmentBookingSheet token={token} day={bookingDay} onClose={() => setBookingDay(null)} onSaved={() => { setBookingDay(null); setSelectedDay(null); setRefresh((value) => value + 1) }} />}
-      {selectedStudent && <StudentDetailsSheet student={selectedStudent} token={token} onClose={() => setSelectedStudent(null)} />}
+      {selectedStudent && <StudentDetailsSheet student={selectedStudent} token={token} onClose={() => setSelectedStudent(null)} onUpdated={(updated) => setSelectedStudent(updated)} />}
     </main>
   )
 }
