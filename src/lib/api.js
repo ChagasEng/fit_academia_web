@@ -3,6 +3,7 @@ const apiUrl = window.__APP_CONFIG__?.apiUrl || import.meta.env.VITE_API_URL || 
 async function result(response, fallback) {
   if (response.status === 401) window.dispatchEvent(new CustomEvent('auth:expired'))
   const data = response.status === 204 ? null : await response.json().catch(() => null)
+  if (response.status === 402) window.dispatchEvent(new CustomEvent('subscription:blocked', { detail: data?.subscription }))
   if (!response.ok) throw new Error(data?.message || Object.values(data?.errors || {})?.[0]?.[0] || fallback)
   return data
 }
@@ -75,4 +76,27 @@ export function createStudentNote(token, id, conteudo) { return request(`/person
 
 export async function updatePersonalProfile(token, profile) {
   return request('/personal/profile', { method: 'PUT', headers: authHeaders(token, true), body: JSON.stringify(profile) }, 'Não foi possível atualizar o perfil.')
+}
+
+export function getAdminUsers(token, search = '', type = '', signal) {
+  return authorizedGet(`/admin/usuarios?search=${encodeURIComponent(search)}&tipo=${type}`, token, signal)
+}
+
+export function createAdminUser(token, user) {
+  return request('/admin/usuarios', {
+    method: 'POST',
+    headers: authHeaders(token, true),
+    body: JSON.stringify(user),
+  }, 'Não foi possível cadastrar o profissional.')
+}
+
+export function markPersonalSubscriptionPaid(token, userId) {
+  return request(`/admin/usuarios/${userId}/mensalidade/paga`, {
+    method: 'PATCH',
+    headers: authHeaders(token),
+  }, 'Não foi possível confirmar o pagamento.')
+}
+
+export function getPersonalSubscription(token) {
+  return authorizedGet('/personal/assinatura', token)
 }

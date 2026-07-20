@@ -9,6 +9,7 @@ import PersonalPage from './pages/personal/PersonalPage'
 import ProfessorPage from './pages/professor/ProfessorPage'
 import AlunoPage from './pages/aluno/AlunoPage'
 import ClientPage from './pages/cliente/ClientPage'
+import SubscriptionBlockedPage from './pages/personal/SubscriptionBlockedPage'
 
 const pages = { admin: AdminPage, personal: PersonalPage, professor: ProfessorPage, aluno: AlunoPage }
 const currentPath = () => window.location.pathname.replace(/\/$/, '') || '/'
@@ -17,6 +18,7 @@ export default function App() {
   const [session, setSession] = useState(readSession)
   const [menu, setMenu] = useState([])
   const [path, setPath] = useState(currentPath)
+  const [subscriptionBlocked, setSubscriptionBlocked] = useState(null)
   const requestedRole = path.split('/').filter(Boolean)[0]
   const sessionRole = session?.access?.slug
   const allowedRole = requestedRole === 'aluno' ? ['aluno_recorrente', 'aluno_avulso'].includes(sessionRole) : sessionRole === requestedRole
@@ -25,9 +27,11 @@ export default function App() {
   useEffect(() => {
     const syncPath = () => setPath(currentPath())
     const expireSession = () => { clearSession(); setSession(null); window.history.replaceState({}, '', '/'); setPath('/') }
+    const blockSubscription = (event) => setSubscriptionBlocked(event.detail || {})
     window.addEventListener('popstate', syncPath)
     window.addEventListener('auth:expired', expireSession)
-    return () => { window.removeEventListener('popstate', syncPath); window.removeEventListener('auth:expired', expireSession) }
+    window.addEventListener('subscription:blocked', blockSubscription)
+    return () => { window.removeEventListener('popstate', syncPath); window.removeEventListener('auth:expired', expireSession); window.removeEventListener('subscription:blocked', blockSubscription) }
   }, [])
 
   useEffect(() => {
@@ -48,15 +52,16 @@ export default function App() {
     setPath(currentPath())
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
-  function handleLogin(nextSession) { saveSession(nextSession); setSession(nextSession); navigate(rolePaths[nextSession.access.slug] || '/', true) }
+  function handleLogin(nextSession) { saveSession(nextSession); setSession(nextSession); setSubscriptionBlocked(null); navigate(rolePaths[nextSession.access.slug] || '/', true) }
   async function handleLogout() {
     try { await logout(session.token) } catch { /* a sessão local deve encerrar mesmo sem conexão */ }
-    finally { clearSession(); setSession(null); navigate('/', true) }
+    finally { clearSession(); setSession(null); setSubscriptionBlocked(null); navigate('/', true) }
   }
 
   if (invalidPrivateRoute) return null
   if (path === '/cliente') return <><ThemeToggle /><ClientPage /></>
   if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <><ThemeToggle /><LoginPage onLogin={handleLogin} /></>
+  if (sessionRole === 'personal' && subscriptionBlocked) return <><ThemeToggle /><SubscriptionBlockedPage token={session.token} subscription={subscriptionBlocked} onReactivated={() => setSubscriptionBlocked(null)} onLogout={handleLogout} /></>
 
   const Page = pages[requestedRole]
   return <><ThemeToggle /><Page path={path} user={session.user} token={session.token} onLogout={handleLogout} />{menu.length > 0 && <FooterBar items={menu} onNavigate={navigate} />}</>
