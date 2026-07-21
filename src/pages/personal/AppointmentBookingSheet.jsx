@@ -14,12 +14,19 @@ const weekdays = [
   [1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [7, 'Dom'],
 ]
 
-export default function AppointmentBookingSheet({ token, day, onClose, onSaved }) {
+function locationForStudent(student) {
+  if (student?.academy) return { ...emptyAppointmentLocation, local_tipo: 'academia', academia_id: student.academy.id, academia_nome: student.academy.nome }
+  if (student?.addresses?.[0]) return locationFromStudentAddress(student.addresses[0])
+  return { ...emptyAppointmentLocation }
+}
+
+export default function AppointmentBookingSheet({ token, day = new Date(), onClose, onSaved, initialStudent = null, recurringByDefault = false, dateEditable = false }) {
+  const [bookingDay, setBookingDay] = useState(day)
   const [mode, setMode] = useState('existing')
-  const [students, setStudents] = useState([])
-  const [studentId, setStudentId] = useState('')
-  const [selectedStudent, setSelectedStudent] = useState(null)
-  const [studentSearch, setStudentSearch] = useState('')
+  const [students, setStudents] = useState(initialStudent ? [initialStudent] : [])
+  const [studentId, setStudentId] = useState(initialStudent ? String(initialStudent.id) : '')
+  const [selectedStudent, setSelectedStudent] = useState(initialStudent)
+  const [studentSearch, setStudentSearch] = useState(initialStudent?.nome || '')
   const [studentPickerOpen, setStudentPickerOpen] = useState(false)
   const [loadingStudents, setLoadingStudents] = useState(false)
   const [newStudent, setNewStudent] = useState({ nome: '', telefone: '', usuario_tipo_id: '4' })
@@ -28,14 +35,15 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   const [workingHours, setWorkingHours] = useState(null)
   const [loadingTimes, setLoadingTimes] = useState(true)
   const [appointmentType, setAppointmentType] = useState('2')
-  const [location, setLocation] = useState(emptyAppointmentLocation)
-  const [repeatEveryDay, setRepeatEveryDay] = useState(false)
+  const [location, setLocation] = useState(() => locationForStudent(initialStudent))
+  const [repeatEveryDay, setRepeatEveryDay] = useState(recurringByDefault)
   const [recurrenceWeekdays, setRecurrenceWeekdays] = useState([1, 2, 3, 4, 5])
   const [recurrenceEnd, setRecurrenceEnd] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
+    if (initialStudent) return undefined
     const controller = new AbortController()
     const timer = setTimeout(() => {
       setStudents([])
@@ -54,13 +62,13 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
       clearTimeout(timer)
       controller.abort()
     }
-  }, [token, studentSearch])
+  }, [token, studentSearch, initialStudent])
 
   useEffect(() => {
     const controller = new AbortController()
     setLoadingTimes(true)
     getAvailableAppointmentTimes(token, {
-      date: dateKey(day),
+      date: dateKey(bookingDay),
       durationMinutes: 60,
       beforeMinutes: location.deslocamento_antes_minutos ?? (location.local_tipo === 'domicilio' ? 30 : 0),
       afterMinutes: location.deslocamento_depois_minutos ?? (location.local_tipo === 'domicilio' ? 30 : 0),
@@ -79,7 +87,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
       })
       .finally(() => { if (!controller.signal.aborted) setLoadingTimes(false) })
     return () => controller.abort()
-  }, [token, day, location.local_tipo, location.deslocamento_antes_minutos, location.deslocamento_depois_minutos])
+  }, [token, bookingDay, location.local_tipo, location.deslocamento_antes_minutos, location.deslocamento_depois_minutos])
 
   function changeExistingStudent(id) {
     setStudentId(id)
@@ -137,7 +145,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
 
       if (!selectedId) throw new Error('Escolha um aluno para continuar.')
 
-      const start = new Date(`${dateKey(day)}T${time}:00`)
+      const start = new Date(`${dateKey(bookingDay)}T${time}:00`)
       const end = new Date(start.getTime() + 60 * 60 * 1000)
       const typeName = { 1: 'Avaliação', 2: 'Treino', 3: 'Consultoria' }[appointmentType]
       const recurringStudent = mode === 'new'
@@ -180,16 +188,18 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
       <div className="day-sheet-header">
         <div>
           <p className="eyebrow">NOVO AGENDAMENTO</p>
-          <h2>{day.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</h2>
+          <h2>{initialStudent ? initialStudent.nome : bookingDay.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</h2>
         </div>
         <button type="button" onClick={onClose} aria-label="Fechar">×</button>
       </div>
 
       <form onSubmit={submit}>
-        <div className="booking-mode">
+        {!initialStudent && <div className="booking-mode">
           <button type="button" className={mode === 'existing' ? 'active' : ''} onClick={() => setMode('existing')}>Aluno existente</button>
           <button type="button" className={mode === 'new' ? 'active' : ''} onClick={() => setMode('new')}>Cadastrar novo aluno</button>
-        </div>
+        </div>}
+
+        {dateEditable && <label>Começar em<input type="date" min={dateKey(new Date())} value={dateKey(bookingDay)} onChange={(event) => event.target.value && setBookingDay(new Date(`${event.target.value}T00:00:00`))} /></label>}
 
         <label>
           Tipo de agendamento
@@ -200,7 +210,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
           </select>
         </label>
 
-        {mode === 'existing' ? (
+        {initialStudent ? <div className="booking-locked-student"><span>ALUNO RECORRENTE</span><strong>{initialStudent.nome}</strong><small>O horário será vinculado diretamente a este aluno.</small></div> : mode === 'existing' ? (
           <div className="booking-student-picker">
             <label>
               Aluno
@@ -260,7 +270,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
             <div className="appointment-weekday-grid" aria-label="Dias da semana">
               {weekdays.map(([weekday, label]) => <label key={weekday}><input type="checkbox" checked={recurrenceWeekdays.includes(weekday)} onChange={() => toggleWeekday(weekday)} /> {label}</label>)}
             </div>
-            <label className="appointment-recurrence-end">Repetir até <input type="date" min={dateKey(day)} value={recurrenceEnd} onChange={(event) => setRecurrenceEnd(event.target.value)} /></label>
+            <label className="appointment-recurrence-end">Repetir até <input type="date" min={dateKey(bookingDay)} value={recurrenceEnd} onChange={(event) => setRecurrenceEnd(event.target.value)} /></label>
             <small>Escolha pelo menos um dia. Sem data final, serão criados os próximos 3 meses.</small>
           </div>}
         </fieldset>}

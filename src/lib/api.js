@@ -82,6 +82,9 @@ export async function createAppointment(token, appointment) {
 export async function updateAppointment(token, id, appointment) {
   return request(`/personal/agenda/${id}`, { method: 'PATCH', headers: authHeaders(token, true), body: JSON.stringify(appointment) }, 'Não foi possível atualizar o agendamento.')
 }
+export async function updateAppointmentRecurrence(token, group, recurrence) {
+  return request(`/personal/agenda/recorrencias/${group}`, { method: 'PATCH', headers: authHeaders(token, true), body: JSON.stringify(recurrence) }, 'Não foi possível atualizar a rotina do aluno.')
+}
 export async function deleteAppointment(token, id) {
   return request(`/personal/agenda/${id}`, { method: 'DELETE', headers: authHeaders(token) }, 'Não foi possível excluir o agendamento.')
 }

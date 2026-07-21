@@ -21,7 +21,7 @@ function formFromStudent(student) {
   }
 }
 
-export default function StudentDetailsSheet({ student, token, onClose, onUpdated }) {
+export default function StudentDetailsSheet({ student, token, onClose, onUpdated, onSchedule }) {
   const [currentStudent, setCurrentStudent] = useState(student)
   const [messageType, setMessageType] = useState('confirmacao')
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false)
@@ -45,8 +45,8 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
 
   const address = currentStudent.addresses?.[0]
   const phone = currentStudent.phones?.[0]
-  const phoneDigits = phone?.numero?.replace(/\D/g, '') || ''
-  const whatsappNumber = phoneDigits.length === 10 || phoneDigits.length === 11 ? `55${phoneDigits}` : phoneDigits
+  const phoneNumberDigits = phone?.numero?.replace(/\D/g, '') || ''
+  const whatsappNumber = phoneNumberDigits.length === 10 || phoneNumberDigits.length === 11 ? `55${phoneNumberDigits}` : phoneNumberDigits
   const destination = address && [address.rua, address.numero, address.bairro, address.cidade, address.estado, address.cep].filter(Boolean).join(', ')
   const nextAppointment = currentStudent.proximo_agendamento
   const nextAppointmentLabel = nextAppointment && `${nextAppointment.type?.nome || nextAppointment.titulo} · ${new Date(nextAppointment.inicio).toLocaleDateString('pt-BR')} às ${new Date(nextAppointment.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
@@ -189,6 +189,14 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
         <button type="button" className="student-action-card action-edit" onClick={startEditing}><ActionIcon name="edit" /><span><strong>Editar cadastro</strong><small>Dados, contato e endereço</small></span><b aria-hidden="true">›</b></button>
         <button type="button" className="student-action-card" onClick={openHistory}><ActionIcon name="history" /><span><strong>Histórico e pagamentos</strong><small>Planos, parcelas e atendimentos</small></span><b aria-hidden="true">›</b></button>
       </div>
+      {currentStudent.usuario_tipo_id === 4 && onSchedule && <section className="student-recurring-schedules">
+        <header><div><span>HORÁRIOS RECORRENTES</span><strong>Rotina semanal</strong></div><button type="button" onClick={() => onSchedule?.(currentStudent, null)}>+ Definir horário</button></header>
+        {(currentStudent.recorrencias || []).map((recurrence) => <article key={recurrence.grupo}>
+          <div><strong>{recurrence.dias_semana.map((day) => ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][day]).join(', ')} · {recurrence.horario}</strong><span>{recurrence.tipo?.nome || recurrence.titulo} · até {new Date(`${recurrence.fim_em}T00:00:00`).toLocaleDateString('pt-BR')}</span><small>{recurrence.quantidade_futura} aulas futuras · {recurrence.local}</small></div>
+          <button type="button" onClick={() => onSchedule?.(currentStudent, recurrence)}>Editar dias e horário</button>
+        </article>)}
+        {(currentStudent.recorrencias || []).length === 0 && <p>Nenhum horário recorrente definido para este aluno.</p>}
+      </section>}
       {destination && <section className="student-route-panel">
         <header><div><span>DESLOCAMENTO</span><strong>Como chegar até o aluno</strong></div><ActionIcon name="route" /></header>
         <button type="button" className="distance-action" onClick={calculateDistance} disabled={calculatingDistance}><ActionIcon name="location" /><span><strong>{calculatingDistance ? 'Calculando distância…' : 'Calcular distância agora'}</strong><small>Usa sua localização atual e mostra o tempo de carro</small></span></button>
