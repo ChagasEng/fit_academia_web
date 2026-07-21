@@ -10,6 +10,9 @@ import {
 import { formatPhone, onlyDigits } from '../../lib/masks'
 
 const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+const weekdays = [
+  [1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [7, 'Dom'],
+]
 
 export default function AppointmentBookingSheet({ token, day, onClose, onSaved }) {
   const [mode, setMode] = useState('existing')
@@ -27,8 +30,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   const [appointmentType, setAppointmentType] = useState('2')
   const [location, setLocation] = useState(emptyAppointmentLocation)
   const [repeatEveryDay, setRepeatEveryDay] = useState(false)
-  const [includeSaturday, setIncludeSaturday] = useState(false)
-  const [includeSunday, setIncludeSunday] = useState(false)
+  const [recurrenceWeekdays, setRecurrenceWeekdays] = useState([1, 2, 3, 4, 5])
   const [recurrenceEnd, setRecurrenceEnd] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -113,6 +115,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
     event.preventDefault()
     setError('')
     if (!time) return setError('Escolha um dia com horário disponível.')
+    if (repeatEveryDay && recurrenceWeekdays.length === 0) return setError('Escolha pelo menos um dia para repetir o horário.')
     setSaving(true)
 
     try {
@@ -149,8 +152,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
         ...location,
         ...(repeatEveryDay && recurringStudent ? {
           recorrencia_todos_dias: true,
-          incluir_sabado: includeSaturday,
-          incluir_domingo: includeSunday,
+          recorrencia_dias_semana: recurrenceWeekdays,
           ...(recurrenceEnd ? { recorrencia_ate: recurrenceEnd } : {}),
         } : {}),
       })
@@ -165,6 +167,12 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   const recurringStudent = mode === 'new'
     ? Number(newStudent.usuario_tipo_id) === 4
     : selectedStudent?.usuario_tipo_id === 4 || selectedStudent?.type?.slug === 'aluno_recorrente'
+
+  function toggleWeekday(weekday) {
+    setRecurrenceWeekdays((current) => current.includes(weekday)
+      ? current.filter((item) => item !== weekday)
+      : [...current, weekday].sort((a, b) => a - b))
+  }
 
   return (
     <section className="booking-sheet" role="dialog" aria-modal="true" aria-label="Novo agendamento">
@@ -245,13 +253,14 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
           <legend>Repetir horário</legend>
           <label className="appointment-recurrence-toggle">
             <input type="checkbox" checked={repeatEveryDay} onChange={(event) => setRepeatEveryDay(event.target.checked)} />
-            <span><strong>Agendar todos os dias úteis</strong><small>Cria este mesmo horário de segunda a sexta.</small></span>
+            <span><strong>Repetir nos dias da semana</strong><small>As aulas só serão criadas a partir da data escolhida.</small></span>
           </label>
           {repeatEveryDay && <div className="appointment-recurrence-options">
-            <label><input type="checkbox" checked={includeSaturday} onChange={(event) => setIncludeSaturday(event.target.checked)} /> Incluir sábado</label>
-            <label><input type="checkbox" checked={includeSunday} onChange={(event) => setIncludeSunday(event.target.checked)} /> Incluir domingo</label>
-            <label>Repetir até <input type="date" min={dateKey(day)} value={recurrenceEnd} onChange={(event) => setRecurrenceEnd(event.target.value)} /></label>
-            <small>Se não informar uma data final, a agenda será criada para os próximos 3 meses.</small>
+            <div className="appointment-weekday-grid" aria-label="Dias da semana">
+              {weekdays.map(([weekday, label]) => <label key={weekday}><input type="checkbox" checked={recurrenceWeekdays.includes(weekday)} onChange={() => toggleWeekday(weekday)} /> {label}</label>)}
+            </div>
+            <label className="appointment-recurrence-end">Repetir até <input type="date" min={dateKey(day)} value={recurrenceEnd} onChange={(event) => setRecurrenceEnd(event.target.value)} /></label>
+            <small>Escolha pelo menos um dia. Sem data final, serão criados os próximos 3 meses.</small>
           </div>}
         </fieldset>}
 
