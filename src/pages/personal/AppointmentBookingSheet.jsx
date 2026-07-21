@@ -118,7 +118,6 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
     if (!time) return setError('Escolha um dia com horário disponível.')
     if (repeatEveryDay && recurrenceWeekdays.length === 0) return setError('Escolha pelo menos um dia para repetir o horário.')
     const phone = normalizeBrazilPhone(newStudent.telefone)
-    if (mode === 'new' && !/^\d{10,11}$/.test(phone)) return setError('Informe um telefone com DDD: (42) 99999-9999.')
     setSaving(true)
 
     try {
