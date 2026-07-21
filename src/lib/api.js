@@ -127,3 +127,38 @@ export function markPersonalSubscriptionPaid(token, userId) {
 export function getPersonalSubscription(token) {
   return authorizedGet('/personal/assinatura', token)
 }
+
+export function getTelegramIntegration(token) {
+  return authorizedGet('/personal/telegram', token)
+}
+
+export function validateTelegramBot(token, botToken) {
+  return request('/personal/telegram/validar', {
+    method: 'POST',
+    headers: authHeaders(token, true),
+    body: JSON.stringify({ token: botToken }),
+  }, 'Não foi possível validar o bot.')
+}
+
+export function connectTelegramBot(token, botToken, autoConfirm = false) {
+  return request('/personal/telegram/conectar', {
+    method: 'POST',
+    headers: authHeaders(token, true),
+    body: JSON.stringify({ token: botToken, telegram_auto_confirm: autoConfirm }),
+  }, 'Não foi possível conectar o bot.')
+}
+
+export function updateTelegramSettings(token, autoConfirm) {
+  return request('/personal/telegram', {
+    method: 'PATCH',
+    headers: authHeaders(token, true),
+    body: JSON.stringify({ telegram_auto_confirm: autoConfirm }),
+  }, 'Não foi possível atualizar as configurações do Telegram.')
+}
+
+export function disconnectTelegramBot(token) {
+  return request('/personal/telegram', {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  }, 'Não foi possível desconectar o bot.')
+}

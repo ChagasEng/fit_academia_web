@@ -1,4 +1,4 @@
-const icons = { home: '⌂', users: '♙', building: '▦', profile: '◉', activity: '⌁', calendar: '□', chart: '↗' }
+const icons = { home: '⌂', users: '♙', building: '▦', profile: '◉', activity: '⌁', calendar: '□', chart: '↗', message: '▷' }
 
 export default function FooterBar({ items, onNavigate }) {
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/'

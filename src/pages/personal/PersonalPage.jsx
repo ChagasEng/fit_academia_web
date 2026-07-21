@@ -4,6 +4,7 @@ import AgendaPage from './AgendaPage'
 import ProfilePage from './ProfilePage'
 import StudentHistoryPage from './StudentHistoryPage'
 import AcademiesPage from './AcademiesPage'
+import TelegramIntegrationPage from './TelegramIntegrationPage'
 
 export default function PersonalPage(props) {
   const path = props.path || window.location.pathname
@@ -11,6 +12,7 @@ export default function PersonalPage(props) {
   const page = path === '/personal/alunos/cadastrar' ? <StudentRegistrationPage {...props} />
       : path === '/personal/alunos' ? <StudentListPage {...props} />
       : path === '/personal/academias' ? <AcademiesPage {...props} />
+      : path === '/personal/integracoes/telegram' ? <TelegramIntegrationPage {...props} />
       : path === '/personal/perfil' ? <ProfilePage {...props} />
         : history ? <StudentHistoryPage {...props} studentId={history[1]} />
           : <AgendaPage {...props} />

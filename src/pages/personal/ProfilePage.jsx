@@ -17,6 +17,9 @@ const emptyProfile = {
   complemento: '',
   horario_inicio: '05:00',
   horario_fim: '20:00',
+  telegram_daily_summary_enabled: false,
+  telegram_daily_summary_available: false,
+  telegram_daily_summary_last_sent_on: null,
 }
 
 function normalizeProfile(response = {}) {
@@ -26,6 +29,8 @@ function normalizeProfile(response = {}) {
   })
   profile.horario_inicio = String(profile.horario_inicio).slice(0, 5)
   profile.horario_fim = String(profile.horario_fim).slice(0, 5)
+  profile.telegram_daily_summary_enabled = Boolean(profile.telegram_daily_summary_enabled)
+  profile.telegram_daily_summary_available = Boolean(profile.telegram_daily_summary_available)
   return profile
 }
 
@@ -112,10 +117,27 @@ export default function ProfilePage({ token, onLogout }) {
           <h2>Horário de funcionamento</h2>
           <p className="form-section-copy">A grade da agenda e os horários disponíveis para novos agendamentos seguirão este expediente.</p>
           <div className="working-hours-fields">
-            <label>Começo do expediente<input type="time" step="1800" required value={profile.horario_inicio} onChange={(event) => update('horario_inicio', event.target.value)} /></label>
+            <label>Começo do expediente <small>(receber mensagem no Telegram)</small><input type="time" step="1800" required value={profile.horario_inicio} onChange={(event) => update('horario_inicio', event.target.value)} /></label>
             <span aria-hidden="true">até</span>
             <label>Fim do expediente<input type="time" step="1800" required value={profile.horario_fim} onChange={(event) => update('horario_fim', event.target.value)} /></label>
           </div>
+          <label className={`telegram-summary-option ${profile.telegram_daily_summary_enabled ? 'enabled' : ''} ${!profile.telegram_daily_summary_available ? 'unavailable' : ''}`}>
+            <input
+              type="checkbox"
+              checked={profile.telegram_daily_summary_enabled}
+              disabled={!profile.telegram_daily_summary_available}
+              onChange={(event) => update('telegram_daily_summary_enabled', event.target.checked)}
+            />
+            <span className="telegram-summary-switch" aria-hidden="true" />
+            <span>
+              <strong>Receber resumo diário no Telegram</strong>
+              <small>
+                {profile.telegram_daily_summary_available
+                  ? `Às ${profile.horario_inicio || '--:--'}, o bot enviará seus atendimentos e horários livres do dia.`
+                  : 'Conecte o Telegram e envie /start ao bot para liberar esta opção.'}
+              </small>
+            </span>
+          </label>
           <div className="working-hours-preview"><span aria-hidden="true">◷</span><div><small>SUA AGENDA FUNCIONARÁ</small><strong>Das {profile.horario_inicio || '--:--'} às {profile.horario_fim || '--:--'}</strong></div></div>
 
           <h2>Endereço profissional</h2>
