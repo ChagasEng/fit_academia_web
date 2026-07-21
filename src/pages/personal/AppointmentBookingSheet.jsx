@@ -13,6 +13,7 @@ const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).p
 const weekdays = [
   [1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [7, 'Dom'],
 ]
+const normalizeBrazilPhone = (value) => onlyDigits(value).replace(/^55(?=\d{10,11}$)/, '')
 
 export default function AppointmentBookingSheet({ token, day, onClose, onSaved }) {
   const [mode, setMode] = useState('existing')
@@ -116,6 +117,8 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
     setError('')
     if (!time) return setError('Escolha um dia com horário disponível.')
     if (repeatEveryDay && recurrenceWeekdays.length === 0) return setError('Escolha pelo menos um dia para repetir o horário.')
+    const phone = normalizeBrazilPhone(newStudent.telefone)
+    if (mode === 'new' && !/^\d{10,11}$/.test(phone)) return setError('Informe um telefone com DDD: (42) 99999-9999.')
     setSaving(true)
 
     try {
@@ -127,7 +130,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
           nome: newStudent.nome,
           usuario_tipo_id: Number(newStudent.usuario_tipo_id),
           academia_id: location.local_tipo === 'academia' && location.academia_id ? Number(location.academia_id) : null,
-          telefone: { numero: newStudent.telefone, tipo: 'whatsapp' },
+          telefone: { numero: phone, tipo: 'whatsapp' },
           endereco: location.local_tipo === 'domicilio' ? studentAddressFromLocation(location) : {},
         })
         selectedId = created.id
