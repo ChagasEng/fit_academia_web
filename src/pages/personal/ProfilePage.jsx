@@ -15,6 +15,8 @@ const emptyProfile = {
   rua: '',
   numero: '',
   complemento: '',
+  horario_inicio: '05:00',
+  horario_fim: '20:00',
 }
 
 function normalizeProfile(response = {}) {
@@ -22,6 +24,8 @@ function normalizeProfile(response = {}) {
   Object.keys(emptyProfile).forEach((key) => {
     if (profile[key] === null || profile[key] === undefined) profile[key] = emptyProfile[key]
   })
+  profile.horario_inicio = String(profile.horario_inicio).slice(0, 5)
+  profile.horario_fim = String(profile.horario_fim).slice(0, 5)
   return profile
 }
 
@@ -76,7 +80,7 @@ export default function ProfilePage({ token, onLogout }) {
     setError('')
     try {
       setProfile(normalizeProfile(await updatePersonalProfile(token, profile)))
-      setMessage('Perfil e município do mapa atualizados com sucesso.')
+      setMessage('Perfil e horário da agenda atualizados com sucesso.')
     } catch (requestError) {
       setError(requestError.message)
     }
@@ -104,6 +108,15 @@ export default function ProfilePage({ token, onLogout }) {
           <label>Nome completo<input required value={profile.name} onChange={(event) => update('name', event.target.value)} /></label>
           <label>CREF<input required inputMode="text" maxLength={15} placeholder="CREF 000000-G/PR" value={formatCref(profile.cref || '')} onChange={(event) => update('cref', formatCref(event.target.value))} /></label>
           <label>E-mail<input disabled value={profile.email || ''} /></label>
+
+          <h2>Horário de funcionamento</h2>
+          <p className="form-section-copy">A grade da agenda e os horários disponíveis para novos agendamentos seguirão este expediente.</p>
+          <div className="working-hours-fields">
+            <label>Começo do expediente<input type="time" step="1800" required value={profile.horario_inicio} onChange={(event) => update('horario_inicio', event.target.value)} /></label>
+            <span aria-hidden="true">até</span>
+            <label>Fim do expediente<input type="time" step="1800" required value={profile.horario_fim} onChange={(event) => update('horario_fim', event.target.value)} /></label>
+          </div>
+          <div className="working-hours-preview"><span aria-hidden="true">◷</span><div><small>SUA AGENDA FUNCIONARÁ</small><strong>Das {profile.horario_inicio || '--:--'} às {profile.horario_fim || '--:--'}</strong></div></div>
 
           <h2>Endereço profissional</h2>
           <p className="form-section-copy">A cidade deste endereço define automaticamente o limite municipal usado no mapa de academias.</p>

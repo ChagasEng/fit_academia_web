@@ -4,6 +4,7 @@ import { createStudentWhatsappContact, estimateTravel, updateStudent } from '../
 import { formatCep, formatPhone, onlyDigits } from '../../lib/masks'
 import { formatCalendarDate } from '../../lib/text'
 import StudentTypeBadge from './StudentTypeBadge'
+import StudentDeactivationModal from './StudentDeactivationModal'
 
 const emptyAddress = { cep: '', estado: '', cidade: '', bairro: '', rua: '', numero: '', complemento: '', referencia: '' }
 
@@ -33,6 +34,9 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState('')
   const [showAcademies, setShowAcademies] = useState(false)
+  const [savingStatus, setSavingStatus] = useState(false)
+  const [statusError, setStatusError] = useState('')
+  const [showDeactivation, setShowDeactivation] = useState(false)
 
   useEffect(() => {
     setCurrentStudent(student)
@@ -150,8 +154,34 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
     }
   }
 
+  async function updateStatus(active, reason = null) {
+    try {
+      setSavingStatus(true)
+      setStatusError('')
+      const updated = await updateStudent(token, currentStudent.id, { ativo: active ? 1 : 0, ...(reason ? { motivo_inativacao: reason } : {}) })
+      setCurrentStudent(updated)
+      onUpdated?.(updated)
+      setShowDeactivation(false)
+    } catch (requestError) {
+      setStatusError(requestError.message)
+    } finally {
+      setSavingStatus(false)
+    }
+  }
+
+  function toggleStatus() {
+    if (currentStudent.ativo) {
+      setStatusError('')
+      setShowDeactivation(true)
+      return
+    }
+    updateStatus(true)
+  }
+
   return <section className="student-sheet" role="dialog" aria-modal="true" aria-label="Dados do aluno">
     <div className="day-sheet-header"><div><p className="eyebrow">CADASTRO DO ALUNO</p><h2>{currentStudent.nome}</h2></div><button onClick={onClose} aria-label="Fechar dados">×</button></div>
+    <div className={`student-profile-status ${currentStudent.ativo ? 'active' : 'inactive'}`}><span aria-hidden="true">{currentStudent.ativo ? '●' : '○'}</span><div><small>STATUS DO ALUNO</small><strong>{currentStudent.ativo ? 'Ativo na sua carteira' : 'Aluno inativo'}</strong><em>{currentStudent.ativo ? 'Disponível para novos agendamentos.' : currentStudent.motivo_inativacao || 'Cadastro e histórico continuam preservados.'}</em>{!currentStudent.ativo && currentStudent.inativado_em && <small className="student-inactive-date">Inativado em {new Date(currentStudent.inativado_em).toLocaleDateString('pt-BR')}</small>}</div><button type="button" disabled={savingStatus} onClick={toggleStatus}>{savingStatus ? 'Salvando…' : currentStudent.ativo ? 'Inativar aluno' : 'Reativar aluno'}</button></div>
+    {statusError && <p className="form-error" role="alert">{statusError}</p>}
     {nextInstallment && <div className="payment-reminder"><strong>Próximo pagamento: {(nextInstallment.valor_centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong><span>{nextInstallment.contract.titulo} · vence em {formatCalendarDate(nextInstallment.vencimento_em)}</span></div>}
     {!editing ? <>
       <dl className="student-details"><div><dt>Tipo</dt><dd><StudentTypeBadge type={currentStudent.type} /></dd></div><div><dt>E-mail</dt><dd>{currentStudent.email || 'Não informado'}</dd></div><div><dt>WhatsApp</dt><dd className="whatsapp-contact"><span>{phone?.numero || 'Não informado'}</span>{whatsappNumber && <span className="whatsapp-template-actions"><select value={messageType} onChange={(event) => setMessageType(event.target.value)} aria-label="Mensagem pronta"><option value="confirmacao">Confirmação</option><option value="lembrete">Lembrete</option><option value="cobranca">Cobrança</option></select><button type="button" onClick={openWhatsApp} disabled={sendingWhatsApp} aria-label={`Enviar ${messageType} pelo WhatsApp`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.3-4.7a8.5 8.5 0 1 1 16.2-4Z"/><path d="M8.2 7.7c.3-.6.6-.6.9-.6h.4l.7 1.8c.1.3 0 .5-.1.7l-.6.7c-.2.2-.1.4 0 .6.7 1.2 2.1 3 3 2.7.3.1.5.1.7-.1l.8-1c.2-.2.4-.3.7-.2l1.8.8c.3.1.4.3.4.5-.1.8-.5 1.5-1.1 2-.5.4-1.2.7-2.1.5-1.2-.3-2.8-.8-4.6-2.4-1.5-1.3-2.5-3-2.8-4.2-.2-.8 0-1.4.3-1.8.4-.5.8-.8 1-.9Z"/></svg><span className="sr-only">Enviar mensagem pelo WhatsApp</span></button></span>}</dd></div>{nextAppointmentLabel && <div className="full whatsapp-context"><dt>Próximo atendimento</dt><dd>{nextAppointmentLabel}</dd></div>}{lastContactLabel && <div className="full whatsapp-context"><dt>Último contato</dt><dd>{lastContactLabel}</dd></div>}{whatsAppError && <div className="full whatsapp-error" role="alert">{whatsAppError}</div>}<div><dt>Academia</dt><dd>{currentStudent.academy?.nome || 'Não vinculada'}</dd></div><div><dt>CEP</dt><dd>{address?.cep || 'Não informado'}</dd></div><div className="full"><dt>Endereço</dt><dd>{destination || 'Não informado'}</dd></div><div className="full"><dt>Complemento / referência</dt><dd>{[address?.complemento, address?.referencia].filter(Boolean).join(' · ') || 'Não informado'}</dd></div></dl>
@@ -176,6 +206,7 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
       {editError && <p className="form-error">{editError}</p>}<div className="student-edit-actions"><button type="button" className="secondary-button" onClick={() => setEditing(false)}>Cancelar</button><button disabled={savingEdit}>{savingEdit ? 'Salvando…' : 'Salvar alterações'}</button></div>
     </form>}
     {showAcademies && <AcademyPickerModal token={token} selectedId={editForm.academia_id} onSelect={(academy) => setEditForm((form) => ({ ...form, academy, academia_id: academy.id }))} onClose={() => setShowAcademies(false)} />}
+    {showDeactivation && <StudentDeactivationModal student={currentStudent} saving={savingStatus} error={statusError} onClose={() => !savingStatus && setShowDeactivation(false)} onConfirm={(reason) => updateStatus(false, reason)} />}
   </section>
 }
 

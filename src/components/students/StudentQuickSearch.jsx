@@ -27,7 +27,7 @@ export default function StudentQuickSearch({ token }) {
     setStudents([])
     setLoading(true)
     const timer = setTimeout(() => {
-      getStudents(token, 1, query.trim(), '', controller.signal)
+      getStudents(token, 1, query.trim(), '', '', controller.signal)
         .then((data) => {
           setStudents(data.students?.data || [])
           setOpen(true)

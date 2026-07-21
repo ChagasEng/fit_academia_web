@@ -53,9 +53,19 @@ async function authorizedGet(path, token, signal) {
   return request(path, { headers: authHeaders(token), signal }, 'Não foi possível carregar os dados.')
 }
 
-export function getStudents(token, page = 1, search = '', type = '', signal) { return authorizedGet(`/personal/alunos?page=${page}&search=${encodeURIComponent(search)}&tipo=${type}`, token, signal) }
+export function getStudents(token, page = 1, search = '', type = '', active = '', signal) { return authorizedGet(`/personal/alunos?page=${page}&search=${encodeURIComponent(search)}&tipo=${type}&ativo=${active}`, token, signal) }
 export function getStudent(token, id) { return authorizedGet(`/personal/alunos/${id}`, token) }
 export function getAppointments(token, start, end) { return authorizedGet(`/personal/agenda?inicio=${start}&fim=${end}`, token) }
+export function getAvailableAppointmentTimes(token, options, signal) {
+  const params = new URLSearchParams({
+    data: options.date,
+    duracao_minutos: String(options.durationMinutes),
+    deslocamento_antes_minutos: String(options.beforeMinutes || 0),
+    deslocamento_depois_minutos: String(options.afterMinutes || 0),
+  })
+  if (options.ignoreAppointmentId) params.set('ignorar_agendamento_id', String(options.ignoreAppointmentId))
+  return authorizedGet(`/personal/agenda/horarios-disponiveis?${params}`, token, signal)
+}
 export function getAcademies(token) { return authorizedGet('/personal/academias', token) }
 export function getAcademy(token, id) { return authorizedGet(`/personal/academias/${id}`, token) }
 export function estimateTravel(token, destination) {
@@ -70,7 +80,10 @@ export async function createAppointment(token, appointment) {
   return request('/personal/agenda', { method: 'POST', headers: authHeaders(token, true), body: JSON.stringify(appointment) }, 'Não foi possível salvar o agendamento.')
 }
 export async function updateAppointment(token, id, appointment) {
-  return request(`/personal/agenda/${id}`, { method: 'PATCH', headers: authHeaders(token, true), body: JSON.stringify(appointment) }, 'Não foi possível atualizar o local do agendamento.')
+  return request(`/personal/agenda/${id}`, { method: 'PATCH', headers: authHeaders(token, true), body: JSON.stringify(appointment) }, 'Não foi possível atualizar o agendamento.')
+}
+export async function deleteAppointment(token, id) {
+  return request(`/personal/agenda/${id}`, { method: 'DELETE', headers: authHeaders(token) }, 'Não foi possível excluir o agendamento.')
 }
 
 export function getPersonalProfile(token) { return authorizedGet('/personal/profile', token) }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import AppointmentLocationFields from '../../components/appointments/AppointmentLocationFields'
-import { createAppointment, createStudent, getStudents } from '../../lib/api'
+import AvailableTimeSlots from '../../components/appointments/AvailableTimeSlots'
+import { createAppointment, createStudent, getAvailableAppointmentTimes, getStudents } from '../../lib/api'
 import {
   emptyAppointmentLocation,
   locationFromStudentAddress,
@@ -20,6 +21,9 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   const [loadingStudents, setLoadingStudents] = useState(false)
   const [newStudent, setNewStudent] = useState({ nome: '', telefone: '', usuario_tipo_id: '4' })
   const [time, setTime] = useState('08:00')
+  const [availableTimes, setAvailableTimes] = useState([])
+  const [workingHours, setWorkingHours] = useState(null)
+  const [loadingTimes, setLoadingTimes] = useState(true)
   const [appointmentType, setAppointmentType] = useState('2')
   const [location, setLocation] = useState(emptyAppointmentLocation)
   const [error, setError] = useState('')
@@ -30,7 +34,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
     const timer = setTimeout(() => {
       setStudents([])
       setLoadingStudents(true)
-      getStudents(token, 1, studentSearch.trim(), '', controller.signal)
+      getStudents(token, 1, studentSearch.trim(), '', '1', controller.signal)
         .then((data) => setStudents(data.students?.data || []))
         .catch((requestError) => {
           if (requestError.name !== 'AbortError') setError(requestError.message)
@@ -45,6 +49,31 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
       controller.abort()
     }
   }, [token, studentSearch])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setLoadingTimes(true)
+    getAvailableAppointmentTimes(token, {
+      date: dateKey(day),
+      durationMinutes: 60,
+      beforeMinutes: location.deslocamento_antes_minutos ?? (location.local_tipo === 'domicilio' ? 30 : 0),
+      afterMinutes: location.deslocamento_depois_minutos ?? (location.local_tipo === 'domicilio' ? 30 : 0),
+    }, controller.signal)
+      .then((response) => {
+        const slots = response.horarios || []
+        setAvailableTimes(slots)
+        setWorkingHours({ inicio: response.horario_inicio, fim: response.horario_fim })
+        setTime((current) => slots.some((slot) => slot.inicio === current) ? current : (slots[0]?.inicio || ''))
+      })
+      .catch((requestError) => {
+        if (requestError.name !== 'AbortError') {
+          setAvailableTimes([])
+          setError(requestError.message)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoadingTimes(false) })
+    return () => controller.abort()
+  }, [token, day, location.local_tipo, location.deslocamento_antes_minutos, location.deslocamento_depois_minutos])
 
   function changeExistingStudent(id) {
     setStudentId(id)
@@ -78,6 +107,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   async function submit(event) {
     event.preventDefault()
     setError('')
+    if (!time) return setError('Escolha um dia com horário disponível.')
     setSaving(true)
 
     try {
@@ -190,15 +220,12 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
           </div>
         )}
 
-        <label>
-          Horário
-          <input type="time" required value={time} onChange={(event) => setTime(event.target.value)} />
-        </label>
-
         <AppointmentLocationFields token={token} value={location} onChange={changeLocation} />
 
+        <AvailableTimeSlots slots={availableTimes} value={time} onChange={setTime} loading={loadingTimes} workingHours={workingHours} />
+
         {error && <p className="form-error">{error}</p>}
-        <button type="submit" disabled={saving}>{saving ? 'Salvando…' : 'Confirmar agendamento'}</button>
+        <button type="submit" disabled={saving || loadingTimes || !time}>{saving ? 'Salvando…' : 'Confirmar agendamento'}</button>
       </form>
     </section>
   )
