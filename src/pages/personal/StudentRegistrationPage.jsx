@@ -3,7 +3,7 @@ import { createStudent } from '../../lib/api'
 import BackButton from '../../components/navigation/BackButton'
 import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import AcademyPickerModal from '../../components/academies/AcademyPickerModal'
-import { formatCep, formatPhone, onlyDigits } from '../../lib/masks'
+import { formatCep, formatPhone, onlyDigits, phoneDigits } from '../../lib/masks'
 
 const emptyAddress = { cep: '', estado: '', cidade: '', bairro: '', rua: '', numero: '', complemento: '', referencia: '' }
 
@@ -60,7 +60,7 @@ export default function StudentRegistrationPage({ token, user, onLogout }) {
       <form className="student-form" onSubmit={handleSubmit}>
         <div className="selected-type"><span>{studentType.label}</span><button type="button" onClick={() => setStudentType(null)}>Alterar tipo</button></div>
         <h2>Dados do aluno</h2>
-        <div className="form-grid"><Field label="Nome completo" value={form.nome} onChange={(value) => setForm({ ...form, nome: value })} required autoComplete="name" /><Field label="E-mail" type="email" value={form.email} onChange={(value) => setForm({ ...form, email: value })} autoComplete="email" /><Field label="Número do WhatsApp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(00) 00000-0000" value={formatPhone(form.telefone)} onChange={(value) => setForm({ ...form, telefone: onlyDigits(value).slice(0, 13) })} required /></div>
+        <div className="form-grid"><Field label="Nome completo" value={form.nome} onChange={(value) => setForm({ ...form, nome: value })} required autoComplete="name" /><Field label="E-mail" type="email" value={form.email} onChange={(value) => setForm({ ...form, email: value })} autoComplete="email" /><Field label="Número do WhatsApp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(00) 00000-0000" value={formatPhone(form.telefone)} onChange={(value) => setForm({ ...form, telefone: phoneDigits(value) })} required /></div>
         <h2>Endereço</h2>
         <div className="form-grid"><Field label="CEP" inputMode="numeric" autoComplete="postal-code" maxLength={9} placeholder="00000-000" value={formatCep(form.endereco.cep)} onChange={changeCep} hint={loadingCep ? 'Buscando endereço...' : 'Digite o CEP para preencher automaticamente'} /><Field label="Estado" maxLength={2} value={form.endereco.estado} onChange={(value) => updateAddress('estado', value.replace(/[^a-z]/gi, '').toUpperCase())} /><Field label="Cidade" value={form.endereco.cidade} onChange={(value) => updateAddress('cidade', value)} /><Field label="Bairro" value={form.endereco.bairro} onChange={(value) => updateAddress('bairro', value)} /><Field label="Rua" value={form.endereco.rua} onChange={(value) => updateAddress('rua', value)} /><Field label="Número" inputMode="text" maxLength={20} value={form.endereco.numero} onChange={(value) => updateAddress('numero', value)} /><Field label="Complemento" maxLength={255} value={form.endereco.complemento} onChange={(value) => updateAddress('complemento', value)} /><Field label="Referência" maxLength={255} value={form.endereco.referencia} onChange={(value) => updateAddress('referencia', value)} /></div>
         <h2>Academia principal</h2>

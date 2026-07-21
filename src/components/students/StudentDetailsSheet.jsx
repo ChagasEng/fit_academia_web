@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import AcademyPickerModal from '../academies/AcademyPickerModal'
 import { createStudentWhatsappContact, estimateTravel, updateStudent } from '../../lib/api'
-import { formatCep, formatPhone, onlyDigits } from '../../lib/masks'
+import { formatCep, formatPhone, onlyDigits, phoneDigits } from '../../lib/masks'
 import { formatCalendarDate } from '../../lib/text'
 import StudentTypeBadge from './StudentTypeBadge'
 import StudentDeactivationModal from './StudentDeactivationModal'
@@ -141,7 +141,7 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
         email: editForm.email || null,
         usuario_tipo_id: Number(editForm.usuario_tipo_id),
         academia_id: editForm.academia_id || null,
-        telefone: { numero: onlyDigits(editForm.telefone).slice(0, 13), tipo: 'whatsapp' },
+        telefone: { numero: phoneDigits(editForm.telefone), tipo: 'whatsapp' },
         endereco: editForm.endereco,
       })
       setCurrentStudent(updated)
@@ -198,7 +198,7 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
       </section>}
     </> : <form className="student-edit-form" onSubmit={saveEditing}>
       <h3>Editar dados</h3>
-      <div className="form-grid"><Field label="Nome completo" value={editForm.nome} onChange={(value) => setEditForm((form) => ({ ...form, nome: value }))} required /><Field label="E-mail" type="email" value={editForm.email} onChange={(value) => setEditForm((form) => ({ ...form, email: value }))} /><label>Tipo<select value={editForm.usuario_tipo_id} onChange={(event) => setEditForm((form) => ({ ...form, usuario_tipo_id: Number(event.target.value) }))}><option value={4}>Aluno recorrente</option><option value={5}>Aluno avulso</option></select></label><Field label="WhatsApp" type="tel" inputMode="tel" value={formatPhone(editForm.telefone)} onChange={(value) => setEditForm((form) => ({ ...form, telefone: onlyDigits(value).slice(0, 13) }))} required /></div>
+      <div className="form-grid"><Field label="Nome completo" value={editForm.nome} onChange={(value) => setEditForm((form) => ({ ...form, nome: value }))} required /><Field label="E-mail" type="email" value={editForm.email} onChange={(value) => setEditForm((form) => ({ ...form, email: value }))} /><label>Tipo<select value={editForm.usuario_tipo_id} onChange={(event) => setEditForm((form) => ({ ...form, usuario_tipo_id: Number(event.target.value) }))}><option value={4}>Aluno recorrente</option><option value={5}>Aluno avulso</option></select></label><Field label="WhatsApp" type="tel" inputMode="tel" value={formatPhone(editForm.telefone)} onChange={(value) => setEditForm((form) => ({ ...form, telefone: phoneDigits(value) }))} required /></div>
       <h3>Endereço</h3>
       <div className="form-grid"><Field label="CEP" inputMode="numeric" maxLength={9} value={formatCep(editForm.endereco.cep)} onChange={(value) => updateAddress('cep', onlyDigits(value).slice(0, 8))} /><Field label="Estado" maxLength={2} value={editForm.endereco.estado} onChange={(value) => updateAddress('estado', value.replace(/[^a-z]/gi, '').toUpperCase())} /><Field label="Cidade" value={editForm.endereco.cidade} onChange={(value) => updateAddress('cidade', value)} /><Field label="Bairro" value={editForm.endereco.bairro} onChange={(value) => updateAddress('bairro', value)} /><Field label="Rua" value={editForm.endereco.rua} onChange={(value) => updateAddress('rua', value)} /><Field label="Número" value={editForm.endereco.numero} onChange={(value) => updateAddress('numero', value)} /><Field label="Complemento" value={editForm.endereco.complemento} onChange={(value) => updateAddress('complemento', value)} /><Field label="Referência" value={editForm.endereco.referencia} onChange={(value) => updateAddress('referencia', value)} /></div>
       <button type="button" className="academy-picker-trigger" onClick={() => setShowAcademies(true)}><span aria-hidden="true">⌖</span><span><small>ACADEMIA PRINCIPAL</small><strong>{editForm.academy?.nome || 'Escolher academia'}</strong></span><b>›</b></button>

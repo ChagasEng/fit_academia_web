@@ -7,13 +7,12 @@ import {
   locationFromStudentAddress,
   studentAddressFromLocation,
 } from '../../lib/appointmentLocation'
-import { formatPhone, onlyDigits } from '../../lib/masks'
+import { formatPhone, phoneDigits } from '../../lib/masks'
 
 const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 const weekdays = [
   [1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [7, 'Dom'],
 ]
-const normalizeBrazilPhone = (value) => onlyDigits(value).replace(/^55(?=\d{10,11}$)/, '')
 
 export default function AppointmentBookingSheet({ token, day, onClose, onSaved }) {
   const [mode, setMode] = useState('existing')
@@ -117,7 +116,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
     setError('')
     if (!time) return setError('Escolha um dia com horário disponível.')
     if (repeatEveryDay && recurrenceWeekdays.length === 0) return setError('Escolha pelo menos um dia para repetir o horário.')
-    const phone = normalizeBrazilPhone(newStudent.telefone)
+    const phone = phoneDigits(newStudent.telefone)
     setSaving(true)
 
     try {
@@ -236,7 +235,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
             </label>
             <label>
               WhatsApp
-              <input required type="tel" inputMode="tel" autoComplete="tel" placeholder="(00) 00000-0000" value={formatPhone(newStudent.telefone)} onChange={(event) => setNewStudent({ ...newStudent, telefone: onlyDigits(event.target.value).slice(0, 13) })} />
+              <input required type="tel" inputMode="tel" autoComplete="tel" placeholder="(00) 00000-0000" value={formatPhone(newStudent.telefone)} onChange={(event) => setNewStudent({ ...newStudent, telefone: phoneDigits(event.target.value) })} />
             </label>
             <label>
               Tipo
