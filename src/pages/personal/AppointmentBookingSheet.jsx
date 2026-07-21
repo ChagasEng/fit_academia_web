@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import AppointmentLocationFields from '../../components/appointments/AppointmentLocationFields'
 import AvailableTimeSlots from '../../components/appointments/AvailableTimeSlots'
-import { createAppointment, createStudent, getAvailableAppointmentTimes, getStudents } from '../../lib/api'
+import { createAppointment, createStudent, createStudentRecurrences, getAvailableAppointmentTimes, getStudents } from '../../lib/api'
 import {
   emptyAppointmentLocation,
   locationFromStudentAddress,
@@ -13,6 +13,13 @@ const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).p
 const weekdays = [
   [1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [7, 'Dom'],
 ]
+let nextRecurrenceRuleId = 1
+
+function recurrenceEndDefault(startDay) {
+  const date = new Date(startDay)
+  date.setMonth(date.getMonth() + 3)
+  return dateKey(date)
+}
 
 function firstRecurringDay(startDay, selectedWeekdays) {
   const date = new Date(startDay)
@@ -49,6 +56,7 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
   const [location, setLocation] = useState(() => locationForStudent(initialStudent))
   const [repeatEveryDay, setRepeatEveryDay] = useState(recurringByDefault)
   const [recurrenceWeekdays, setRecurrenceWeekdays] = useState([1, 2, 3, 4, 5])
+  const [additionalRecurrences, setAdditionalRecurrences] = useState([])
   const [recurrenceEnd, setRecurrenceEnd] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -139,6 +147,7 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
     setError('')
     if (!time) return setError('Escolha um dia com horário disponível.')
     if (repeatEveryDay && recurrenceWeekdays.length === 0) return setError('Escolha pelo menos um dia para repetir o horário.')
+    if (repeatEveryDay && additionalRecurrences.some((rule) => rule.weekdays.length === 0 || !rule.time)) return setError('Escolha os dias e o horário em cada bloco da recorrência.')
     const phone = phoneDigits(newStudent.telefone)
     setSaving(true)
 
@@ -160,26 +169,36 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
 
       if (!selectedId) throw new Error('Escolha um aluno para continuar.')
 
-      const start = new Date(`${dateKey(bookingDay)}T${time}:00`)
-      const end = new Date(start.getTime() + 60 * 60 * 1000)
       const typeName = { 1: 'Avaliação', 2: 'Treino', 3: 'Consultoria' }[appointmentType]
       const recurringStudent = mode === 'new'
         ? Number(newStudent.usuario_tipo_id) === 4
         : selectedStudent?.usuario_tipo_id === 4 || selectedStudent?.type?.slug === 'aluno_recorrente'
 
-      await createAppointment(token, {
-        aluno_id: Number(selectedId),
-        agendamento_tipo_id: Number(appointmentType),
-        titulo: `${typeName} com ${name}`,
-        inicio: start.toISOString(),
-        fim: end.toISOString(),
-        ...location,
-        ...(repeatEveryDay && recurringStudent ? {
-          recorrencia_todos_dias: true,
-          recorrencia_dias_semana: recurrenceWeekdays,
-          ...(recurrenceEnd ? { recorrencia_ate: recurrenceEnd } : {}),
-        } : {}),
-      })
+      if (repeatEveryDay && recurringStudent) {
+        await createStudentRecurrences(token, Number(selectedId), {
+          agendamento_tipo_id: Number(appointmentType),
+          titulo: `${typeName} com ${name}`,
+          inicio_em: dateKey(bookingDay),
+          recorrencia_ate: recurrenceEnd || recurrenceEndDefault(bookingDay),
+          duracao_minutos: 60,
+          horarios: [
+            { dias_semana: recurrenceWeekdays, horario: time },
+            ...additionalRecurrences.map((rule) => ({ dias_semana: rule.weekdays, horario: rule.time })),
+          ],
+          ...location,
+        })
+      } else {
+        const start = new Date(`${dateKey(bookingDay)}T${time}:00`)
+        const end = new Date(start.getTime() + 60 * 60 * 1000)
+        await createAppointment(token, {
+          aluno_id: Number(selectedId),
+          agendamento_tipo_id: Number(appointmentType),
+          titulo: `${typeName} com ${name}`,
+          inicio: start.toISOString(),
+          fim: end.toISOString(),
+          ...location,
+        })
+      }
       onSaved()
     } catch (requestError) {
       setError(requestError.message)
@@ -196,6 +215,20 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
     setRecurrenceWeekdays((current) => current.includes(weekday)
       ? current.filter((item) => item !== weekday)
       : [...current, weekday].sort((a, b) => a - b))
+  }
+
+  function addRecurrenceRule() {
+    nextRecurrenceRuleId += 1
+    setAdditionalRecurrences((current) => [...current, { id: nextRecurrenceRuleId, weekdays: [], time: time || '08:00' }])
+  }
+
+  function toggleAdditionalWeekday(ruleId, weekday) {
+    setAdditionalRecurrences((current) => current.map((rule) => rule.id !== ruleId ? rule : {
+      ...rule,
+      weekdays: rule.weekdays.includes(weekday)
+        ? rule.weekdays.filter((item) => item !== weekday)
+        : [...rule.weekdays, weekday].sort((a, b) => a - b),
+    }))
   }
 
   return (
@@ -282,11 +315,21 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
             <span><strong>Repetir nos dias da semana</strong><small>As aulas só serão criadas a partir da data escolhida.</small></span>
           </label>
           {repeatEveryDay && <div className="appointment-recurrence-options">
-            <div className="appointment-weekday-grid" aria-label="Dias da semana">
-              {weekdays.map(([weekday, label]) => <label key={weekday}><input type="checkbox" checked={recurrenceWeekdays.includes(weekday)} onChange={() => toggleWeekday(weekday)} /> {label}</label>)}
-            </div>
+            <article className="inline-recurrence-rule">
+              <div className="multi-schedule-rule-heading"><strong>Horário 1</strong><label>Às <input required type="time" value={time} onChange={(event) => setTime(event.target.value)} /></label></div>
+              <div className="appointment-weekday-grid" aria-label="Dias do horário 1">
+                {weekdays.map(([weekday, label]) => <label key={weekday}><input type="checkbox" checked={recurrenceWeekdays.includes(weekday)} onChange={() => toggleWeekday(weekday)} /> {label}</label>)}
+              </div>
+            </article>
+            {additionalRecurrences.map((rule, index) => <article className="inline-recurrence-rule" key={rule.id}>
+              <div className="multi-schedule-rule-heading"><strong>Horário {index + 2}</strong><label>Às <input required type="time" value={rule.time} onChange={(event) => setAdditionalRecurrences((current) => current.map((item) => item.id === rule.id ? { ...item, time: event.target.value } : item))} /></label><button type="button" onClick={() => setAdditionalRecurrences((current) => current.filter((item) => item.id !== rule.id))}>Remover</button></div>
+              <div className="appointment-weekday-grid" aria-label={`Dias do horário ${index + 2}`}>
+                {weekdays.map(([weekday, label]) => <label key={weekday}><input type="checkbox" checked={rule.weekdays.includes(weekday)} onChange={() => toggleAdditionalWeekday(rule.id, weekday)} /> {label}</label>)}
+              </div>
+            </article>)}
+            <button className="add-recurrence-time" type="button" onClick={addRecurrenceRule}>+ Outro horário</button>
             <label className="appointment-recurrence-end">Repetir até <input type="date" min={dateKey(bookingDay)} value={recurrenceEnd} onChange={(event) => setRecurrenceEnd(event.target.value)} /></label>
-            <small>Escolha pelo menos um dia. Sem data final, serão criados os próximos 3 meses.</small>
+            <small>Você pode usar horários diferentes em cada grupo de dias. Sem data final, serão criados os próximos 3 meses.</small>
           </div>}
         </fieldset>}
 
