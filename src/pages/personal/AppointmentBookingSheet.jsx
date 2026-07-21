@@ -26,6 +26,10 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
   const [loadingTimes, setLoadingTimes] = useState(true)
   const [appointmentType, setAppointmentType] = useState('2')
   const [location, setLocation] = useState(emptyAppointmentLocation)
+  const [repeatEveryDay, setRepeatEveryDay] = useState(false)
+  const [includeSaturday, setIncludeSaturday] = useState(false)
+  const [includeSunday, setIncludeSunday] = useState(false)
+  const [recurrenceEnd, setRecurrenceEnd] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -79,6 +83,7 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
     setStudentId(id)
     const student = students.find((item) => String(item.id) === String(id))
     setSelectedStudent(student || null)
+    if (student && student.usuario_tipo_id !== 4 && student.type?.slug !== 'aluno_recorrente') setRepeatEveryDay(false)
     const address = student?.addresses?.[0]
     if (location.local_tipo === 'domicilio' && address && !location.local_cep) {
       setLocation(locationFromStudentAddress(address))
@@ -131,6 +136,9 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
       const start = new Date(`${dateKey(day)}T${time}:00`)
       const end = new Date(start.getTime() + 60 * 60 * 1000)
       const typeName = { 1: 'Avaliação', 2: 'Treino', 3: 'Consultoria' }[appointmentType]
+      const recurringStudent = mode === 'new'
+        ? Number(newStudent.usuario_tipo_id) === 4
+        : selectedStudent?.usuario_tipo_id === 4 || selectedStudent?.type?.slug === 'aluno_recorrente'
 
       await createAppointment(token, {
         aluno_id: Number(selectedId),
@@ -139,6 +147,12 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
         inicio: start.toISOString(),
         fim: end.toISOString(),
         ...location,
+        ...(repeatEveryDay && recurringStudent ? {
+          recorrencia_todos_dias: true,
+          incluir_sabado: includeSaturday,
+          incluir_domingo: includeSunday,
+          ...(recurrenceEnd ? { recorrencia_ate: recurrenceEnd } : {}),
+        } : {}),
       })
       onSaved()
     } catch (requestError) {
@@ -147,6 +161,10 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
       setSaving(false)
     }
   }
+
+  const recurringStudent = mode === 'new'
+    ? Number(newStudent.usuario_tipo_id) === 4
+    : selectedStudent?.usuario_tipo_id === 4 || selectedStudent?.type?.slug === 'aluno_recorrente'
 
   return (
     <section className="booking-sheet" role="dialog" aria-modal="true" aria-label="Novo agendamento">
@@ -212,13 +230,30 @@ export default function AppointmentBookingSheet({ token, day, onClose, onSaved }
             </label>
             <label>
               Tipo
-              <select value={newStudent.usuario_tipo_id} onChange={(event) => setNewStudent({ ...newStudent, usuario_tipo_id: event.target.value })}>
+              <select value={newStudent.usuario_tipo_id} onChange={(event) => {
+                if (event.target.value !== '4') setRepeatEveryDay(false)
+                setNewStudent({ ...newStudent, usuario_tipo_id: event.target.value })
+              }}>
                 <option value="4">Aluno recorrente</option>
                 <option value="5">Aluno avulso</option>
               </select>
             </label>
           </div>
         )}
+
+        {recurringStudent && <fieldset className="appointment-recurrence">
+          <legend>Repetir horário</legend>
+          <label className="appointment-recurrence-toggle">
+            <input type="checkbox" checked={repeatEveryDay} onChange={(event) => setRepeatEveryDay(event.target.checked)} />
+            <span><strong>Agendar todos os dias úteis</strong><small>Cria este mesmo horário de segunda a sexta.</small></span>
+          </label>
+          {repeatEveryDay && <div className="appointment-recurrence-options">
+            <label><input type="checkbox" checked={includeSaturday} onChange={(event) => setIncludeSaturday(event.target.checked)} /> Incluir sábado</label>
+            <label><input type="checkbox" checked={includeSunday} onChange={(event) => setIncludeSunday(event.target.checked)} /> Incluir domingo</label>
+            <label>Repetir até <input type="date" min={dateKey(day)} value={recurrenceEnd} onChange={(event) => setRecurrenceEnd(event.target.value)} /></label>
+            <small>Se não informar uma data final, a agenda será criada para os próximos 3 meses.</small>
+          </div>}
+        </fieldset>}
 
         <AppointmentLocationFields token={token} value={location} onChange={changeLocation} />
 
