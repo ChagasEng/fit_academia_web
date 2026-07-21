@@ -8,7 +8,7 @@ import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import RecurringScheduleCreateSheet from './RecurringScheduleCreateSheet'
 import RecurringScheduleEditSheet from './RecurringScheduleEditSheet'
 
-export default function StudentListPage({ token, onLogout }) {
+export default function StudentListPage({ token, onLogout, user }) {
   const [students, setStudents] = useState([])
   const [type, setType] = useState('')
   const [status, setStatus] = useState('1')
@@ -198,7 +198,7 @@ export default function StudentListPage({ token, onLogout }) {
         setStudents((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item))
         setRefresh((value) => value + 1)
       }} />}
-      {scheduleTarget && !scheduleTarget.recurrence && <RecurringScheduleCreateSheet token={token} student={scheduleTarget.student} onClose={() => setScheduleTarget(null)} onSaved={scheduleSaved} />}
+      {scheduleTarget && !scheduleTarget.recurrence && <RecurringScheduleCreateSheet token={token} student={scheduleTarget.student} personalName={user?.name} onClose={() => setScheduleTarget(null)} onSaved={scheduleSaved} />}
       {scheduleTarget?.recurrence && <RecurringScheduleEditSheet token={token} student={scheduleTarget.student} recurrence={scheduleTarget.recurrence} onClose={() => setScheduleTarget(null)} onSaved={scheduleSaved} />}
       {deactivationTarget && <StudentDeactivationModal key={deactivationTarget.id} student={deactivationTarget} saving={statusChangingId === deactivationTarget.id} error={deactivationError} onClose={() => !statusChangingId && setDeactivationTarget(null)} onConfirm={confirmDeactivation} />}
     </main>

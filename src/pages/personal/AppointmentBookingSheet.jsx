@@ -27,7 +27,7 @@ function locationForStudent(student) {
   return { ...emptyAppointmentLocation }
 }
 
-export default function AppointmentBookingSheet({ token, day = new Date(), onClose, onSaved, initialStudent = null, recurringByDefault = false, dateEditable = false }) {
+export default function AppointmentBookingSheet({ token, day = new Date(), onClose, onSaved, initialStudent = null, recurringByDefault = false, dateEditable = false, personalName = 'Personal' }) {
   const [bookingDay, setBookingDay] = useState(day)
   const [mode, setMode] = useState('existing')
   const [students, setStudents] = useState(initialStudent ? [initialStudent] : [])
@@ -151,7 +151,6 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
 
     try {
       let selectedId = studentId
-      let name = selectedStudent?.nome
 
       if (mode === 'new') {
         const created = await createStudent(token, {
@@ -162,7 +161,6 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
           endereco: location.local_tipo === 'domicilio' ? studentAddressFromLocation(location) : {},
         })
         selectedId = created.id
-        name = created.nome
       }
 
       if (!selectedId) throw new Error('Escolha um aluno para continuar.')
@@ -175,7 +173,7 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
       if (repeatEveryDay && recurringStudent) {
         await createStudentRecurrences(token, Number(selectedId), {
           agendamento_tipo_id: Number(appointmentType),
-          titulo: `${typeName} com ${name}`,
+          titulo: `${typeName} com ${personalName}`,
           inicio_em: dateKey(bookingDay),
           recorrencia_ate: recurrenceEnd || recurrenceEndDefault(bookingDay),
           duracao_minutos: 60,
@@ -191,7 +189,7 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
         await createAppointment(token, {
           aluno_id: Number(selectedId),
           agendamento_tipo_id: Number(appointmentType),
-          titulo: `${typeName} com ${name}`,
+          titulo: `${typeName} com ${personalName}`,
           inicio: start.toISOString(),
           fim: end.toISOString(),
           ...location,

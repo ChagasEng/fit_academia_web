@@ -27,7 +27,7 @@ function newRule(days = [], time = '08:00') {
   return { id: nextRuleId, days, time }
 }
 
-export default function RecurringScheduleCreateSheet({ token, student, onClose, onSaved }) {
+export default function RecurringScheduleCreateSheet({ token, student, personalName = 'Personal', onClose, onSaved }) {
   const [startDate, setStartDate] = useState(dateKey(new Date()))
   const [endDate, setEndDate] = useState(defaultEndDate)
   const [appointmentType, setAppointmentType] = useState('2')
@@ -63,7 +63,7 @@ export default function RecurringScheduleCreateSheet({ token, student, onClose, 
       const typeName = { 1: 'Avaliação', 2: 'Treino', 3: 'Consultoria' }[appointmentType]
       await createStudentRecurrences(token, student.id, {
         agendamento_tipo_id: Number(appointmentType),
-        titulo: `${typeName} com ${student.nome}`,
+        titulo: `${typeName} com ${personalName}`,
         inicio_em: startDate,
         recorrencia_ate: endDate,
         duracao_minutos: Number(duration),

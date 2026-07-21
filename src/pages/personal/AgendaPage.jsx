@@ -13,7 +13,7 @@ const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).p
 const startOfDay = (date) => { const copy = new Date(date); copy.setHours(0, 0, 0, 0); return copy }
 const addDays = (date, days) => { const copy = new Date(date); copy.setDate(copy.getDate() + days); return copy }
 
-export default function AgendaPage({ token, onLogout }) {
+export default function AgendaPage({ token, onLogout, user }) {
   // A primeira coluna sempre começa na data escolhida (hoje, ao abrir a agenda).
   const [week, setWeek] = useState(() => startOfDay(new Date()))
   const [appointments, setAppointments] = useState([])
@@ -167,7 +167,7 @@ export default function AgendaPage({ token, onLogout }) {
           </div>
         </article>
       })}{selectedAppointments.length === 0 && <p>Nenhum aluno agendado neste dia.</p>}</div></section>}
-      {bookingDay && <AppointmentBookingSheet token={token} day={bookingDay} onClose={() => setBookingDay(null)} onSaved={() => { setBookingDay(null); setSelectedDay(null); setRefresh((value) => value + 1) }} />}
+      {bookingDay && <AppointmentBookingSheet token={token} day={bookingDay} personalName={user?.name} onClose={() => setBookingDay(null)} onSaved={() => { setBookingDay(null); setSelectedDay(null); setRefresh((value) => value + 1) }} />}
       {selectedAppointment && <AppointmentActionsSheet
         appointment={selectedAppointment}
         hasRoute={Boolean(routeDestination(selectedAppointment))}
