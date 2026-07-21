@@ -190,7 +190,7 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
         <button type="button" className="student-action-card" onClick={openHistory}><ActionIcon name="history" /><span><strong>Histórico e pagamentos</strong><small>Planos, parcelas e atendimentos</small></span><b aria-hidden="true">›</b></button>
       </div>
       {currentStudent.usuario_tipo_id === 4 && onSchedule && <section className="student-recurring-schedules">
-        <header><div><span>HORÁRIOS RECORRENTES</span><strong>Rotina semanal</strong></div><button type="button" onClick={() => onSchedule?.(currentStudent, null)}>+ Definir horário</button></header>
+        <header><div><span>HORÁRIOS RECORRENTES</span><strong>Rotina semanal</strong></div><button type="button" onClick={() => onSchedule?.(currentStudent, null)}>+ Montar rotina</button></header>
         {(currentStudent.recorrencias || []).map((recurrence) => <article key={recurrence.grupo}>
           <div><strong>{recurrence.dias_semana.map((day) => ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][day]).join(', ')} · {recurrence.horario}</strong><span>{recurrence.tipo?.nome || recurrence.titulo} · até {new Date(`${recurrence.fim_em}T00:00:00`).toLocaleDateString('pt-BR')}</span><small>{recurrence.quantidade_futura} aulas futuras · {recurrence.local}</small></div>
           <button type="button" onClick={() => onSchedule?.(currentStudent, recurrence)}>Editar dias e horário</button>

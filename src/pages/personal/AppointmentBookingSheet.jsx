@@ -14,6 +14,17 @@ const weekdays = [
   [1, 'Seg'], [2, 'Ter'], [3, 'Qua'], [4, 'Qui'], [5, 'Sex'], [6, 'Sáb'], [7, 'Dom'],
 ]
 
+function firstRecurringDay(startDay, selectedWeekdays) {
+  const date = new Date(startDay)
+  date.setHours(0, 0, 0, 0)
+  for (let offset = 0; offset < 7; offset += 1) {
+    const weekday = date.getDay() === 0 ? 7 : date.getDay()
+    if (selectedWeekdays.includes(weekday)) return date
+    date.setDate(date.getDate() + 1)
+  }
+  return new Date(startDay)
+}
+
 function locationForStudent(student) {
   if (student?.academy) return { ...emptyAppointmentLocation, local_tipo: 'academia', academia_id: student.academy.id, academia_nome: student.academy.nome }
   if (student?.addresses?.[0]) return locationFromStudentAddress(student.addresses[0])
@@ -41,6 +52,10 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
   const [recurrenceEnd, setRecurrenceEnd] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const availabilityDay = repeatEveryDay && recurrenceWeekdays.length > 0
+    ? firstRecurringDay(bookingDay, recurrenceWeekdays)
+    : bookingDay
+  const availabilityDate = dateKey(availabilityDay)
 
   useEffect(() => {
     if (initialStudent) return undefined
@@ -68,7 +83,7 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
     const controller = new AbortController()
     setLoadingTimes(true)
     getAvailableAppointmentTimes(token, {
-      date: dateKey(bookingDay),
+      date: availabilityDate,
       durationMinutes: 60,
       beforeMinutes: location.deslocamento_antes_minutos ?? (location.local_tipo === 'domicilio' ? 30 : 0),
       afterMinutes: location.deslocamento_depois_minutos ?? (location.local_tipo === 'domicilio' ? 30 : 0),
@@ -87,7 +102,7 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
       })
       .finally(() => { if (!controller.signal.aborted) setLoadingTimes(false) })
     return () => controller.abort()
-  }, [token, bookingDay, location.local_tipo, location.deslocamento_antes_minutos, location.deslocamento_depois_minutos])
+  }, [token, availabilityDate, location.local_tipo, location.deslocamento_antes_minutos, location.deslocamento_depois_minutos])
 
   function changeExistingStudent(id) {
     setStudentId(id)
@@ -277,7 +292,7 @@ export default function AppointmentBookingSheet({ token, day = new Date(), onClo
 
         <AppointmentLocationFields token={token} value={location} onChange={changeLocation} />
 
-        <AvailableTimeSlots slots={availableTimes} value={time} onChange={setTime} loading={loadingTimes} workingHours={workingHours} />
+        <AvailableTimeSlots slots={availableTimes} value={time} onChange={setTime} loading={loadingTimes} workingHours={workingHours} dateLabel={availabilityDay.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })} />
 
         {error && <p className="form-error">{error}</p>}
         <button type="submit" disabled={saving || loadingTimes || !time}>{saving ? 'Salvando…' : 'Confirmar agendamento'}</button>
