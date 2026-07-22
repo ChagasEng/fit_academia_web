@@ -34,7 +34,7 @@ function normalizeProfile(response = {}) {
   return profile
 }
 
-export default function ProfilePage({ token, onLogout }) {
+export default function ProfilePage({ token, onLogout, onNavigate }) {
   const [profile, setProfile] = useState(emptyProfile)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -102,6 +102,11 @@ export default function ProfilePage({ token, onLogout }) {
       <section className="registration-content">
         <p className="eyebrow">MEU PERFIL</p>
         <h1>Dados profissionais</h1>
+        <button type="button" className="profile-menu-item" onClick={() => onNavigate('/personal/integracoes/telegram')}>
+          <span className="profile-menu-icon" aria-hidden="true">▷</span>
+          <span><small>INTEGRAÇÕES</small><strong>Agenda pelo Telegram</strong><em>Conecte e configure seu bot de agendamentos.</em></span>
+          <b aria-hidden="true">›</b>
+        </button>
         {revenue && (
           <div className="revenue-cards">
             <div><span>Recebido no mês</span><strong>{money(revenue.received_cents)}</strong></div>

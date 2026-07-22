@@ -145,7 +145,7 @@ export default function TelegramIntegrationPage({ token, onLogout }) {
   return (
     <main className="dashboard-page telegram-page">
       <header className="dashboard-header">
-        <div className="header-side"><BackButton fallback="/personal" /><strong>fit<span>academia</span></strong></div>
+        <div className="header-side"><BackButton fallback="/personal/perfil" /><strong>fit<span>academia</span></strong></div>
         <div className="header-actions"><StudentQuickSearch token={token} /><button onClick={onLogout}>Sair</button></div>
       </header>
 

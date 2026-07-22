@@ -44,7 +44,9 @@ export default function App() {
 
   useEffect(() => {
     if (!session?.token) return setMenu([])
-    getMenu(session.token).then((response) => setMenu(response.items)).catch(() => setMenu([]))
+    getMenu(session.token)
+      .then((response) => setMenu(response.items.filter((item) => item.path !== '/personal/integracoes/telegram')))
+      .catch(() => setMenu([]))
   }, [session])
 
   function navigate(nextPath, replace = false) {
@@ -67,5 +69,5 @@ export default function App() {
   if (sessionRole === 'personal' && subscriptionBlocked) return <><ThemeToggle /><SubscriptionBlockedPage token={session.token} subscription={subscriptionBlocked} onReactivated={() => setSubscriptionBlocked(null)} onLogout={handleLogout} /></>
 
   const Page = pages[requestedRole]
-  return <><ThemeToggle /><Page path={path} user={session.user} token={session.token} onLogout={handleLogout} />{menu.length > 0 && <FooterBar items={menu} onNavigate={navigate} />}</>
+  return <><ThemeToggle /><Page path={path} user={session.user} token={session.token} onLogout={handleLogout} onNavigate={navigate} />{menu.length > 0 && <FooterBar items={menu} onNavigate={navigate} />}</>
 }
