@@ -1370,3 +1370,25 @@ small { color: #70807c; font-weight: 400; }
   .charge-due-date { max-width: none; }
   .charge-actions { grid-template-columns: 1fr; }
 }
+
+/* Carregamento de rotas e ajustes de renderização para aparelhos móveis. */
+.route-loading { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: .75rem; color: var(--theme-text-muted); background: var(--theme-page); }
+.route-loading > span { width: 2rem; height: 2rem; border: 3px solid var(--theme-border); border-top-color: #137d62; border-radius: 50%; animation: login-spin .75s linear infinite; }
+.route-loading > strong { font-size: .82rem; }
+.route-loading-inline { min-height: calc(100dvh - 4.5rem); }
+
+@media (max-width: 760px) {
+  .footer-bar,
+  .theme-toggle,
+  .appointment-modal-backdrop,
+  .student-deactivation-backdrop,
+  .academy-picker-backdrop,
+  .charge-backdrop,
+  .charge-actions {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .footer-bar { background: var(--theme-surface); }
+  .charge-actions { background: var(--theme-surface); }
+}

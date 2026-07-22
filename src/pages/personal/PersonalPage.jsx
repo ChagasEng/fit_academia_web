@@ -1,11 +1,13 @@
-import StudentRegistrationPage from './StudentRegistrationPage'
-import StudentListPage from './StudentListPage'
-import AgendaPage from './AgendaPage'
-import ProfilePage from './ProfilePage'
-import StudentHistoryPage from './StudentHistoryPage'
-import AcademiesPage from './AcademiesPage'
-import FinancePage from './FinancePage'
-import TelegramIntegrationPage from './TelegramIntegrationPage'
+import { lazy, Suspense } from 'react'
+
+const StudentRegistrationPage = lazy(() => import('./StudentRegistrationPage'))
+const StudentListPage = lazy(() => import('./StudentListPage'))
+const AgendaPage = lazy(() => import('./AgendaPage'))
+const ProfilePage = lazy(() => import('./ProfilePage'))
+const StudentHistoryPage = lazy(() => import('./StudentHistoryPage'))
+const AcademiesPage = lazy(() => import('./AcademiesPage'))
+const FinancePage = lazy(() => import('./FinancePage'))
+const TelegramIntegrationPage = lazy(() => import('./TelegramIntegrationPage'))
 
 export default function PersonalPage(props) {
   const path = props.path || window.location.pathname
@@ -18,5 +20,5 @@ export default function PersonalPage(props) {
       : path === '/personal/perfil' ? <ProfilePage {...props} />
         : history ? <StudentHistoryPage {...props} studentId={history[1]} />
           : <AgendaPage {...props} />
-  return page
+  return <Suspense fallback={<main className="dashboard-page"><div className="route-loading route-loading-inline" role="status"><span /><strong>Carregando tela…</strong></div></main>}>{page}</Suspense>
 }

@@ -14,14 +14,28 @@ async function request(path, options, fallback) {
 }
 
 async function requestFrom(baseUrl, path, options, fallback) {
-  let response
+  const controller = new AbortController()
+  const callerSignal = options?.signal
+  let timedOut = false
+  const cancelFromCaller = () => controller.abort(callerSignal?.reason)
+  if (callerSignal?.aborted) cancelFromCaller()
+  else callerSignal?.addEventListener('abort', cancelFromCaller, { once: true })
+  const timeout = setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, 20000)
+
   try {
-    response = await fetch(`${baseUrl}${path}`, options)
+    const response = await fetch(`${baseUrl}${path}`, { ...options, signal: controller.signal })
+    return await result(response, fallback)
   } catch (error) {
+    if (timedOut) throw new Error('O servidor demorou para responder. Tente novamente em alguns instantes.')
     if (error.name === 'AbortError') throw error
     throw new Error('Sem conexão com o servidor. Confira sua internet e tente novamente.')
+  } finally {
+    clearTimeout(timeout)
+    callerSignal?.removeEventListener('abort', cancelFromCaller)
   }
-  return result(response, fallback)
 }
 
 const authHeaders = (token, json = false) => ({
@@ -60,7 +74,7 @@ async function authorizedGet(path, token, signal) {
 
 export function getStudents(token, page = 1, search = '', type = '', active = '', signal) { return authorizedGet(`/personal/alunos?page=${page}&search=${encodeURIComponent(search)}&tipo=${type}&ativo=${active}`, token, signal) }
 export function getStudent(token, id) { return authorizedGet(`/personal/alunos/${id}`, token) }
-export function getAppointments(token, start, end) { return authorizedGet(`/personal/agenda?inicio=${start}&fim=${end}`, token) }
+export function getAppointments(token, start, end, signal) { return authorizedGet(`/personal/agenda?inicio=${start}&fim=${end}`, token, signal) }
 export function getAvailableAppointmentTimes(token, options, signal) {
   const params = new URLSearchParams({
     data: options.date,

@@ -35,6 +35,16 @@ export default function AgendaPage({ token, onLogout, user }) {
     const lastHour = endHour + (endMinutes > 0 ? 1 : 0)
     return Array.from({ length: Math.max(lastHour - startHour, 1) }, (_, index) => startHour + index)
   }, [workingHours])
+  const appointmentsBySlot = useMemo(() => {
+    const grouped = new Map()
+    appointments.forEach((appointment) => {
+      const start = new Date(appointment.inicio)
+      const key = `${dateKey(start)}-${start.getHours()}`
+      if (!grouped.has(key)) grouped.set(key, [])
+      grouped.get(key).push(appointment)
+    })
+    return grouped
+  }, [appointments])
 
   useEffect(() => {
     getPersonalProfile(token).then((profile) => setWorkingHours({
@@ -44,18 +54,18 @@ export default function AgendaPage({ token, onLogout, user }) {
   }, [token])
 
   useEffect(() => {
-    let active = true
+    const controller = new AbortController()
     setLoading(true)
     setError('')
-    getAppointments(token, dateKey(days[0]), dateKey(addDays(days[6], 1)))
-      .then((items) => { if (active) setAppointments(Array.isArray(items) ? items : []) })
+    getAppointments(token, dateKey(days[0]), dateKey(addDays(days[6], 1)), controller.signal)
+      .then((items) => setAppointments(Array.isArray(items) ? items : []))
       .catch((requestError) => {
-        if (!active) return
+        if (requestError.name === 'AbortError') return
         setAppointments([])
         setError(requestError.message)
       })
-      .finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [token, days, refresh])
   const today = dateKey(new Date())
   const period = `${days[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} — ${days[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}`
@@ -128,7 +138,7 @@ export default function AgendaPage({ token, onLogout, user }) {
     window.open(url, '_blank', 'noopener,noreferrer')
     setRouteMenuAppointmentId(null)
   }
-  function eventCards(day, hour) { return appointments.filter((item) => { const start = new Date(item.inicio); return dateKey(start) === dateKey(day) && start.getHours() === hour }).map((item) => <button className="calendar-event" key={item.id} aria-label={`Gerenciar ${item.titulo}`} onClick={(event) => { event.stopPropagation(); setSelectedAppointment(item) }}><span className="calendar-event-top"><time>{new Date(item.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time><b aria-hidden="true">•••</b></span><strong>{item.titulo}</strong><span>{item.student?.nome || 'Atendimento'}</span><StudentTypeBadge type={item.student?.type} /></button>) }
+  function eventCards(day, hour) { return (appointmentsBySlot.get(`${dateKey(day)}-${hour}`) || []).map((item) => <button className="calendar-event" key={item.id} aria-label={`Gerenciar ${item.titulo}`} onClick={(event) => { event.stopPropagation(); setSelectedAppointment(item) }}><span className="calendar-event-top"><time>{new Date(item.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time><b aria-hidden="true">•••</b></span><strong>{item.titulo}</strong><span>{item.student?.nome || 'Atendimento'}</span><StudentTypeBadge type={item.student?.type} /></button>) }
 
   return (
     <main className="dashboard-page agenda-page">

@@ -1,19 +1,21 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { clearSession, readSession, rolePaths, saveSession } from './lib/auth'
 import { getMenu, logout } from './lib/api'
 import FooterBar from './components/navigation/FooterBar'
 import ThemeToggle from './components/settings/ThemeToggle'
 import LoginPage from './pages/login/LoginPage'
 import { ForgotPasswordPage, ResetPasswordPage } from './pages/login/PasswordRecoveryPages'
-import AdminPage from './pages/admin/AdminPage'
-import PersonalPage from './pages/personal/PersonalPage'
-import ProfessorPage from './pages/professor/ProfessorPage'
-import AlunoPage from './pages/aluno/AlunoPage'
-import ClientPage from './pages/cliente/ClientPage'
-import SubscriptionBlockedPage from './pages/personal/SubscriptionBlockedPage'
+
+const AdminPage = lazy(() => import('./pages/admin/AdminPage'))
+const PersonalPage = lazy(() => import('./pages/personal/PersonalPage'))
+const ProfessorPage = lazy(() => import('./pages/professor/ProfessorPage'))
+const AlunoPage = lazy(() => import('./pages/aluno/AlunoPage'))
+const ClientPage = lazy(() => import('./pages/cliente/ClientPage'))
+const SubscriptionBlockedPage = lazy(() => import('./pages/personal/SubscriptionBlockedPage'))
 
 const pages = { admin: AdminPage, personal: PersonalPage, professor: ProfessorPage, aluno: AlunoPage }
 const currentPath = () => window.location.pathname.replace(/\/$/, '') || '/'
+const loadingScreen = <main className="route-loading" role="status"><span /><strong>Carregando tela…</strong></main>
 
 export default function App() {
   const [session, setSession] = useState(readSession)
@@ -62,16 +64,16 @@ export default function App() {
   }
 
   if (invalidPrivateRoute) return null
-  if (path === '/cliente') return <><ThemeToggle /><ClientPage /></>
+  if (path === '/cliente') return <Suspense fallback={loadingScreen}><ThemeToggle /><ClientPage /></Suspense>
   if (path === '/esqueci-minha-senha') return <><ThemeToggle /><ForgotPasswordPage onBack={() => navigate('/', true)} /></>
   if (path === '/redefinir-senha') return <><ThemeToggle /><ResetPasswordPage onBack={() => navigate('/', true)} onRequestNewLink={() => navigate('/esqueci-minha-senha', true)} /></>
   if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <><ThemeToggle /><LoginPage onLogin={handleLogin} onForgotPassword={() => navigate('/esqueci-minha-senha')} /></>
-  if (sessionRole === 'personal' && subscriptionBlocked) return <><ThemeToggle /><SubscriptionBlockedPage token={session.token} subscription={subscriptionBlocked} onReactivated={() => setSubscriptionBlocked(null)} onLogout={handleLogout} /></>
+  if (sessionRole === 'personal' && subscriptionBlocked) return <Suspense fallback={loadingScreen}><ThemeToggle /><SubscriptionBlockedPage token={session.token} subscription={subscriptionBlocked} onReactivated={() => setSubscriptionBlocked(null)} onLogout={handleLogout} /></Suspense>
 
   const Page = pages[requestedRole]
   const footerItems = sessionRole === 'personal'
     ? menu.filter((item) => item.path !== '/personal/academias')
     : menu
 
-  return <><ThemeToggle /><Page path={path} user={session.user} token={session.token} onLogout={handleLogout} onNavigate={navigate} />{footerItems.length > 0 && <FooterBar items={footerItems} onNavigate={navigate} />}</>
+  return <Suspense fallback={loadingScreen}><ThemeToggle /><Page path={path} user={session.user} token={session.token} onLogout={handleLogout} onNavigate={navigate} />{footerItems.length > 0 && <FooterBar items={footerItems} onNavigate={navigate} />}</Suspense>
 }

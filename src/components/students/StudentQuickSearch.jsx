@@ -17,7 +17,7 @@ export default function StudentQuickSearch({ token }) {
   }, [])
 
   useEffect(() => {
-    if (query.trim().length < 1) {
+    if (query.trim().length < 2) {
       setStudents([])
       setLoading(false)
       return
@@ -53,7 +53,7 @@ export default function StudentQuickSearch({ token }) {
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
-  const showResults = open && query.trim().length > 0
+  const showResults = open && query.trim().length >= 2
 
   return <div className="header-search" ref={containerRef}><label><span className="sr-only">Pesquisar aluno</span><input value={query} onFocus={() => setOpen(true)} onKeyDown={(event) => event.key === 'Escape' && setOpen(false)} onChange={(event) => { setQuery(event.target.value); setOpen(true) }} placeholder="Pesquisar aluno" type="search" /></label>{showResults && <div className="header-search-results">{students.map((student) => <button type="button" key={student.id} onClick={() => selectStudent(student.id)}><span className="header-search-avatar">{student.nome?.slice(0, 1) || '?'}</span><span><strong>{student.nome || 'Aluno sem nome'}</strong><small>{student.type?.nome || 'Tipo não informado'}</small></span></button>)}{loading && <p>Pesquisando…</p>}{!loading && students.length === 0 && <p>Nenhum aluno encontrado.</p>}</div>}</div>
 }
