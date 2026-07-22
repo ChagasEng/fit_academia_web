@@ -5,7 +5,7 @@ function Brand() {
   return <div className="brand" aria-label="Fit Academia"><span className="brand-mark" aria-hidden="true">F</span><span>fit<span>academia</span></span></div>
 }
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage({ onLogin, onForgotPassword }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -72,6 +72,7 @@ export default function LoginPage({ onLogin }) {
             {!loading && <span aria-hidden="true">→</span>}
             {loading && <span className="login-spinner" aria-hidden="true" />}
           </button>
+          <button className="forgot-password-link" type="button" disabled={loading} onClick={onForgotPassword}>Esqueci minha senha</button>
           <p className="login-session-note"><span aria-hidden="true">✓</span>Sua sessão permanece conectada neste aparelho.</p>
         </form>
       </div>

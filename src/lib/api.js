@@ -1,4 +1,5 @@
 const apiUrl = window.__APP_CONFIG__?.apiUrl || import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+const authApiUrl = window.__APP_CONFIG__?.authApiUrl || import.meta.env.VITE_AUTH_API_URL || apiUrl.replace(/\/v1\/?$/, '')
 
 async function result(response, fallback) {
   if (response.status === 401) window.dispatchEvent(new CustomEvent('auth:expired'))
@@ -9,9 +10,13 @@ async function result(response, fallback) {
 }
 
 async function request(path, options, fallback) {
+  return requestFrom(apiUrl, path, options, fallback)
+}
+
+async function requestFrom(baseUrl, path, options, fallback) {
   let response
   try {
-    response = await fetch(`${apiUrl}${path}`, options)
+    response = await fetch(`${baseUrl}${path}`, options)
   } catch (error) {
     if (error.name === 'AbortError') throw error
     throw new Error('Sem conexão com o servidor. Confira sua internet e tente novamente.')
@@ -65,6 +70,30 @@ export function getAvailableAppointmentTimes(token, options, signal) {
   })
   if (options.ignoreAppointmentId) params.set('ignorar_agendamento_id', String(options.ignoreAppointmentId))
   return authorizedGet(`/personal/agenda/horarios-disponiveis?${params}`, token, signal)
+}
+
+export function forgotPassword(email) {
+  return requestFrom(authApiUrl, '/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ email }),
+  }, 'Não foi possível solicitar a redefinição de senha.')
+}
+
+export function validateResetToken(email, token) {
+  return requestFrom(authApiUrl, '/auth/validate-reset-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ email, token }),
+  }, 'Não foi possível validar o link de redefinição.')
+}
+
+export function resetPassword({ email, token, password, passwordConfirmation }) {
+  return requestFrom(authApiUrl, '/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ email, token, password, password_confirmation: passwordConfirmation }),
+  }, 'Não foi possível redefinir a senha.')
 }
 export function getAcademies(token) { return authorizedGet('/personal/academias', token) }
 export function getAcademy(token, id) { return authorizedGet(`/personal/academias/${id}`, token) }

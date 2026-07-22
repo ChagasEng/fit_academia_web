@@ -4,6 +4,7 @@ import { getMenu, logout } from './lib/api'
 import FooterBar from './components/navigation/FooterBar'
 import ThemeToggle from './components/settings/ThemeToggle'
 import LoginPage from './pages/login/LoginPage'
+import { ForgotPasswordPage, ResetPasswordPage } from './pages/login/PasswordRecoveryPages'
 import AdminPage from './pages/admin/AdminPage'
 import PersonalPage from './pages/personal/PersonalPage'
 import ProfessorPage from './pages/professor/ProfessorPage'
@@ -60,7 +61,9 @@ export default function App() {
 
   if (invalidPrivateRoute) return null
   if (path === '/cliente') return <><ThemeToggle /><ClientPage /></>
-  if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <><ThemeToggle /><LoginPage onLogin={handleLogin} /></>
+  if (path === '/esqueci-minha-senha') return <><ThemeToggle /><ForgotPasswordPage onBack={() => navigate('/', true)} /></>
+  if (path === '/redefinir-senha') return <><ThemeToggle /><ResetPasswordPage onBack={() => navigate('/', true)} onRequestNewLink={() => navigate('/esqueci-minha-senha', true)} /></>
+  if (!session || !requestedRole || !pages[requestedRole] || !allowedRole) return <><ThemeToggle /><LoginPage onLogin={handleLogin} onForgotPassword={() => navigate('/esqueci-minha-senha')} /></>
   if (sessionRole === 'personal' && subscriptionBlocked) return <><ThemeToggle /><SubscriptionBlockedPage token={session.token} subscription={subscriptionBlocked} onReactivated={() => setSubscriptionBlocked(null)} onLogout={handleLogout} /></>
 
   const Page = pages[requestedRole]

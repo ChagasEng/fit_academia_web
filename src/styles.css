@@ -1,8 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
 
-:root { color: #17212b; font-family: 'DM Sans', sans-serif; background: #f8fafc; }
+:root {
+  color-scheme: light;
+  --theme-page: #f7faf9;
+  --theme-surface: #fff;
+  --theme-surface-soft: #f3faf6;
+  --theme-text: #17212b;
+  --theme-text-muted: #65727f;
+  --theme-border: #dbe7e3;
+  --theme-primary: #137d62;
+  color: var(--theme-text);
+  font-family: 'DM Sans', sans-serif;
+  background: var(--theme-page);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --theme-page: #101817;
+  --theme-surface: #182522;
+  --theme-surface-soft: #1d2e29;
+  --theme-text: #e4efeb;
+  --theme-text-muted: #a9bbb5;
+  --theme-border: #355149;
+  --theme-primary: #54d5aa;
+}
 * { box-sizing: border-box; }
-body { margin: 0; }
+html, body, #root { min-height: 100%; }
+body { margin: 0; color: var(--theme-text); background: var(--theme-page); }
 button, input { font: inherit; }
 
 .login-page { min-height: 100vh; display: grid; grid-template-columns: minmax(330px, 46%) 1fr; }
@@ -773,6 +796,27 @@ small { color: #70807c; font-weight: 400; }
 .login-spinner { width: 1rem; height: 1rem; border: 2px solid rgba(255, 255, 255, .42); border-top-color: #fff; border-radius: 50%; animation: login-spin .7s linear infinite; }
 .login-session-note { margin: -.15rem 0 0; display: flex; align-items: center; justify-content: center; gap: .35rem; color: #71827d; font-size: .72rem; text-align: center; }
 .login-session-note > span { color: #148266; font-weight: 800; }
+.forgot-password-link { width: fit-content; height: auto; min-height: 0; margin: -.2rem auto 0; padding: .25rem; color: #137d62; border: 0; background: transparent; font-size: .8rem; font-weight: 700; text-decoration: underline; text-underline-offset: .2rem; }
+.forgot-password-link:hover { color: #0b5d49; background: transparent; }
+.recovery-page { min-height: 100vh; display: grid; grid-template-columns: minmax(330px, 46%) 1fr; }
+.recovery-presentation { min-height: 100vh; padding: clamp(2rem, 5vw, 4.5rem); display: flex; flex-direction: column; color: #f7fcfb; background: linear-gradient(145deg, #113d3b 0%, #0d625b 57%, #37a779 130%); }
+.recovery-presentation > div { margin: auto 0; max-width: 29rem; }
+.recovery-presentation h1 { margin: 0; font: 800 clamp(2.7rem, 5vw, 5rem)/.98 Manrope, sans-serif; letter-spacing: -.075em; }
+.recovery-presentation div > p:last-child { margin: 1.5rem 0 0; color: #d8eeea; font-size: 1.05rem; line-height: 1.6; }
+.recovery-presentation > p:last-child { margin: 0; color: #b8d8d0; font-size: .78rem; }
+.recovery-panel { width: min(100%, 36rem); align-self: center; justify-self: center; padding: 3rem; }
+.recovery-card { width: 100%; }
+.recovery-back { width: auto; height: auto; min-height: 0; margin: 0 0 1.5rem; padding: .2rem 0; color: #52645f; border: 0; background: transparent; font-size: .82rem; font-weight: 700; }
+.recovery-back:hover { color: #0d624d; background: transparent; }
+.recovery-success, .recovery-invalid { padding: 1rem; border: 1px solid #b8e2ce; border-radius: .8rem; color: #175c46; background: #effaf4; line-height: 1.5; }
+.recovery-success strong { font: 800 1rem Manrope, sans-serif; }.recovery-success p, .recovery-invalid p { margin: .35rem 0 1rem; }
+.recovery-success button:not(.login-submit) { width: auto; height: auto; margin: 0; padding: 0; color: #0d624d; border: 0; background: transparent; font-size: .8rem; font-weight: 700; text-decoration: underline; }
+.recovery-invalid { color: #8c421c; border-color: #fed7aa; background: #fff7ed; }.recovery-invalid .login-submit { margin: 0; }
+.recovery-loading, .password-rule { margin: 0; color: #65727f; font-size: .82rem; line-height: 1.5; }.password-rule { margin-top: -.25rem; }
+[data-theme="dark"] .recovery-panel { color: var(--theme-text); background: var(--theme-page); }
+[data-theme="dark"] .recovery-back { color: #c3d5cf; }
+[data-theme="dark"] .recovery-success { color: #b6efd5; border-color: #3b755d; background: #1d382e; }
+[data-theme="dark"] .recovery-invalid { color: #f7c99e; border-color: #75502e; background: #392d20; }
 @keyframes login-spin { to { transform: rotate(360deg); } }
 
 [data-theme="dark"] .login-card { color: #e4efeb; }
@@ -801,6 +845,10 @@ small { color: #70807c; font-weight: 400; }
   .mobile-login-footer { margin: auto 0 0; padding: .9rem .25rem 0; display: block; color: #73847f; font-size: .68rem; text-align: center; }
   [data-theme="dark"] .login-page { background: linear-gradient(165deg, #082f2b 0, #0d544a 17rem, #101817 17rem); }
   [data-theme="dark"] .login-card { border-color: #2d4540; background: rgba(24, 37, 34, .98); }
+  .recovery-page { min-height: 100dvh; display: block; background: linear-gradient(165deg, #0b3d38 0, #0f6759 14rem, #f7faf9 14rem); }
+  .recovery-presentation { min-height: 10rem; padding: max(1.15rem, env(safe-area-inset-top)) 1.3rem 1.4rem; }.recovery-presentation > div { margin: auto 0 0; }.recovery-presentation > p:last-child { display: none; }.recovery-presentation h1 { font-size: 2rem; }.recovery-presentation div > p:last-child { margin-top: .5rem; font-size: .82rem; }
+  .recovery-panel { width: 100%; padding: 1.2rem 1rem max(1rem, env(safe-area-inset-bottom)); }.recovery-card { padding: 1.35rem; border: 1px solid rgba(207, 224, 218, .86); border-radius: 1.25rem; background: rgba(255, 255, 255, .98); box-shadow: 0 18px 48px rgba(8, 55, 46, .18); }
+  [data-theme="dark"] .recovery-page { background: linear-gradient(165deg, #082f2b 0, #0d544a 14rem, #101817 14rem); } [data-theme="dark"] .recovery-card { border-color: #2d4540; background: rgba(24, 37, 34, .98); }
 }
 
 @media (max-width: 380px) {
@@ -822,4 +870,214 @@ small { color: #70807c; font-weight: 400; }
 
 @media (prefers-reduced-motion: reduce) {
   .login-spinner { animation-duration: 1.4s; }
+}
+
+/*
+ * Garantias de contraste entre temas.
+ * Este bloco fica por último intencionalmente: telas novas não devem conseguir
+ * reintroduzir cores do tema claro sobre superfícies escuras por ordem do CSS.
+ */
+[data-theme="dark"],
+[data-theme="dark"] body,
+[data-theme="dark"] #root {
+  color: var(--theme-text);
+  background-color: var(--theme-page);
+}
+
+[data-theme="dark"] .dashboard-page,
+[data-theme="dark"] .registration-page,
+[data-theme="dark"] .login-panel,
+[data-theme="dark"] .academy-page {
+  color: var(--theme-text);
+  background-color: var(--theme-page);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  background-color: var(--theme-surface);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #829791;
+  opacity: 1;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: #54d5aa;
+  box-shadow: 0 0 0 3px rgba(84, 213, 170, .18);
+}
+
+[data-theme="dark"] .header-search-results,
+[data-theme="dark"] .header-search-results button,
+[data-theme="dark"] .history-card,
+[data-theme="dark"] .revenue-cards > div,
+[data-theme="dark"] .type-buttons button,
+[data-theme="dark"] .student-filters button,
+[data-theme="dark"] .booking-mode button,
+[data-theme="dark"] .agenda-actions button,
+[data-theme="dark"] .app-error-page section {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+}
+
+[data-theme="dark"] .header-search-results button:hover,
+[data-theme="dark"] .type-buttons button:hover,
+[data-theme="dark"] .student-filters button:hover,
+[data-theme="dark"] .student-filters button.active,
+[data-theme="dark"] .booking-mode button:hover,
+[data-theme="dark"] .booking-mode button.active,
+[data-theme="dark"] .agenda-actions button:hover {
+  color: #fff;
+  border-color: #19936f;
+  background: #137d62;
+}
+
+[data-theme="dark"] .header-search-results small,
+[data-theme="dark"] .header-search-results p,
+[data-theme="dark"] .history-card .payment-row span,
+[data-theme="dark"] .history-card .payment-row em,
+[data-theme="dark"] .revenue-cards span,
+[data-theme="dark"] .form-section-copy,
+[data-theme="dark"] .loading-status,
+[data-theme="dark"] .student-list .list-status,
+[data-theme="dark"] .student-list-toolbar > span,
+[data-theme="dark"] .student-status-overview em,
+[data-theme="dark"] .student-profile-status em,
+[data-theme="dark"] .student-deactivation-modal > p,
+[data-theme="dark"] .student-inactive-date,
+[data-theme="dark"] .academy-details-empty,
+[data-theme="dark"] .academy-students > p,
+[data-theme="dark"] .mobile-login-footer,
+[data-theme="dark"] .app-error-page p {
+  color: var(--theme-text-muted);
+}
+
+[data-theme="dark"] .form-error,
+[data-theme="dark"] .field-error,
+[data-theme="dark"] .whatsapp-error {
+  color: #fca5a5;
+}
+
+[data-theme="dark"] .form-success { color: #86efac; }
+
+[data-theme="dark"] .day-appointment-details,
+[data-theme="dark"] .academy-students button,
+[data-theme="dark"] .academy-directory > button {
+  color: var(--theme-text);
+}
+
+[data-theme="dark"] .day-appointment-details:hover,
+[data-theme="dark"] .academy-students button:hover,
+[data-theme="dark"] .academy-directory > button:hover {
+  color: #fff;
+  background: #21352f;
+}
+
+[data-theme="dark"] .calendar-event {
+  color: #cef0e4;
+  border-left-color: #37b78e;
+  background: #1d3b32;
+}
+
+[data-theme="dark"] .calendar-event span,
+[data-theme="dark"] .calendar-event-top { color: #a9cfc2; }
+[data-theme="dark"] .calendar-event:has(.student-type-badge.recorrente) { background: #292d4b; }
+[data-theme="dark"] .calendar-event:has(.student-type-badge.avulso) { background: #423023; }
+[data-theme="dark"] .calendar-event:has(.student-type-badge.recorrente):hover { background: #343a61; }
+[data-theme="dark"] .calendar-event:has(.student-type-badge.avulso):hover { background: #553d2b; }
+
+[data-theme="dark"] .appointment-recurrence-toggle strong,
+[data-theme="dark"] .booking-sheet .appointment-weekday-grid label,
+[data-theme="dark"] .booking-sheet .appointment-recurrence-end,
+[data-theme="dark"] .booking-sheet .inline-recurrence-rule .multi-schedule-rule-heading label,
+[data-theme="dark"] .booking-locked-student strong,
+[data-theme="dark"] .recurring-current-summary strong,
+[data-theme="dark"] .student-recurring-schedules > header strong,
+[data-theme="dark"] .multi-schedule-rules > header strong,
+[data-theme="dark"] .working-hours-fields input,
+[data-theme="dark"] .telegram-validation strong {
+  color: var(--theme-text);
+}
+
+[data-theme="dark"] .appointment-recurrence-toggle small,
+[data-theme="dark"] .appointment-recurrence-options > small,
+[data-theme="dark"] .booking-locked-student small,
+[data-theme="dark"] .recurring-current-summary small,
+[data-theme="dark"] .student-recurring-schedules article span,
+[data-theme="dark"] .student-recurring-schedules article small,
+[data-theme="dark"] .student-recurring-schedules > p,
+[data-theme="dark"] .multi-schedule-rules > p,
+[data-theme="dark"] .working-hours-fields label > small,
+[data-theme="dark"] .working-hours-fields > span,
+[data-theme="dark"] .working-hours-preview small,
+[data-theme="dark"] .telegram-summary-option small,
+[data-theme="dark"] .telegram-validation div > span,
+[data-theme="dark"] .telegram-facts span,
+[data-theme="dark"] .whatsapp-context,
+[data-theme="dark"] .travel-estimate small,
+[data-theme="dark"] .travel-estimate p,
+[data-theme="dark"] .travel-buffer-fields label {
+  color: var(--theme-text-muted);
+}
+
+[data-theme="dark"] .current-distance,
+[data-theme="dark"] .appointment-summary,
+[data-theme="dark"] .travel-estimate,
+[data-theme="dark"] .osm-coverage-note,
+[data-theme="dark"] .recurring-edit-note {
+  color: #c7e7dc;
+  border-color: #386558;
+  background: #20372f;
+}
+
+[data-theme="dark"] .current-distance span { color: #a9c6bc; }
+[data-theme="dark"] .appointment-summary.empty {
+  color: #c5cfcb;
+  border-left-color: #64748b;
+  background: #222c29;
+}
+
+[data-theme="dark"] .payment-reminder,
+[data-theme="dark"] .map-warning,
+[data-theme="dark"] .academy-map-error {
+  color: #f3c98b;
+  border-color: #66532b;
+  background: #2b281d;
+}
+
+[data-theme="dark"] .student-row-meta > span:not(.student-type-badge),
+[data-theme="dark"] .student-row-meta .student-inactive-reason {
+  color: #a9bbb5 !important;
+}
+
+[data-theme="dark"] .student-deactivation-modal > header > button,
+[data-theme="dark"] .student-list-search > button {
+  color: #c7d8d2;
+  background: #263a35;
+}
+
+[data-theme="dark"] .app-error-page {
+  color: var(--theme-text);
+  background: var(--theme-page);
+}
+
+[data-theme="dark"] .app-error-page .secondary-button,
+[data-theme="dark"] .student-academy-actions .secondary-button,
+[data-theme="dark"] .editor-actions .secondary-button,
+[data-theme="dark"] .subscription-blocked-page .secondary-button {
+  color: #c7d8d2;
+  border-color: #47635b;
+  background: transparent;
+}
+
+@media (prefers-contrast: more) {
+  :root { --theme-text-muted: #4d5c68; }
+  [data-theme="dark"] { --theme-text-muted: #c5d4cf; }
 }
