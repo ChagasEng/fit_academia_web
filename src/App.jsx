@@ -3,6 +3,7 @@ import { clearSession, readSession, rolePaths, saveSession } from './lib/auth'
 import { getMenu, logout } from './lib/api'
 import FooterBar from './components/navigation/FooterBar'
 import ThemeToggle from './components/settings/ThemeToggle'
+import useConsoleProtection from './hooks/useConsoleProtection'
 import LoginPage from './pages/login/LoginPage'
 import { ForgotPasswordPage, ResetPasswordPage } from './pages/login/PasswordRecoveryPages'
 
@@ -27,6 +28,7 @@ export default function App() {
   const sessionRole = session?.access?.slug
   const allowedRole = requestedRole === 'aluno' ? ['aluno_recorrente', 'aluno_avulso'].includes(sessionRole) : sessionRole === requestedRole
   const invalidPrivateRoute = session?.token && path !== '/cliente' && (!requestedRole || !pages[requestedRole] || !allowedRole)
+  useConsoleProtection(session)
 
   useEffect(() => {
     const syncPath = () => setPath(currentPath())
