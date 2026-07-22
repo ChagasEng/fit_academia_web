@@ -1,7 +1,13 @@
 export default function BackButton({ fallback = '/' }) {
   const parts = window.location.pathname.split('/').filter(Boolean)
+  const navigationOrigin = window.history.state?.backTo
 
   function goBack() {
+    if (navigationOrigin) {
+      window.history.back()
+      window.scrollTo({ top: 0, behavior: 'instant' })
+      return
+    }
     const isStudentHistory = parts[0] === 'personal' && parts[1] === 'alunos' && parts[3] === 'historico'
     const destination = isStudentHistory ? '/personal/alunos' : fallback !== '/' ? fallback : (parts.length > 1 ? `/${parts.slice(0, -1).join('/')}` : '/')
     window.history.pushState({}, '', destination)

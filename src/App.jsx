@@ -49,9 +49,9 @@ export default function App() {
       .catch(() => setMenu([]))
   }, [session])
 
-  function navigate(nextPath, replace = false) {
+  function navigate(nextPath, replace = false, navigationState = {}) {
     if (currentPath() === nextPath) return
-    window.history[replace ? 'replaceState' : 'pushState']({}, '', nextPath)
+    window.history[replace ? 'replaceState' : 'pushState'](navigationState, '', nextPath)
     setPath(currentPath())
     window.scrollTo({ top: 0, behavior: 'instant' })
   }

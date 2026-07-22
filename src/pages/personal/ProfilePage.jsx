@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import BackButton from '../../components/navigation/BackButton'
 import StudentQuickSearch from '../../components/students/StudentQuickSearch'
-import { getPersonalProfile, getRevenue, updatePersonalProfile } from '../../lib/api'
+import { getPersonalProfile, updatePersonalProfile } from '../../lib/api'
 import { formatCep, formatCref, onlyDigits } from '../../lib/masks'
 
 const emptyProfile = {
@@ -38,7 +38,6 @@ export default function ProfilePage({ token, onLogout, onNavigate }) {
   const [profile, setProfile] = useState(emptyProfile)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [revenue, setRevenue] = useState(null)
   const [loadingCep, setLoadingCep] = useState(false)
 
   useEffect(() => {
@@ -46,8 +45,6 @@ export default function ProfilePage({ token, onLogout, onNavigate }) {
       .then((response) => setProfile(normalizeProfile(response)))
       .catch(() => setError('Não foi possível carregar o perfil.'))
   }, [token])
-  useEffect(() => { getRevenue(token).then(setRevenue).catch(() => null) }, [token])
-
   useEffect(() => {
     const cep = profile.cep || ''
     if (cep.length !== 8) return undefined
@@ -91,8 +88,6 @@ export default function ProfilePage({ token, onLogout, onNavigate }) {
     }
   }
 
-  const money = (value) => (Number(value || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-
   return (
     <main className="dashboard-page registration-page">
       <header className="dashboard-header">
@@ -113,14 +108,12 @@ export default function ProfilePage({ token, onLogout, onNavigate }) {
             <span><small>LOCALIZAÇÃO</small><strong>Academias</strong><em>Consulte as academias cadastradas no mapa.</em></span>
             <b aria-hidden="true">›</b>
           </button>
+          <button type="button" className="profile-menu-item finance-profile-menu-item" onClick={() => onNavigate('/personal/faturamento')}>
+            <span className="profile-menu-icon" aria-hidden="true">$</span>
+            <span><small>FINANCEIRO</small><strong>Faturamento</strong><em>Acompanhe pagamentos, saldos e pendências.</em></span>
+            <b aria-hidden="true">›</b>
+          </button>
         </div>
-        {revenue && (
-          <div className="revenue-cards">
-            <div><span>Recebido no mês</span><strong>{money(revenue.received_cents)}</strong></div>
-            <div><span>A receber</span><strong>{money(revenue.pending_cents)}</strong></div>
-            <div><span>Em atraso</span><strong>{money(revenue.overdue_cents)}</strong></div>
-          </div>
-        )}
         <form className="student-form profile-form" onSubmit={submit}>
           <label>Nome completo<input required value={profile.name} onChange={(event) => update('name', event.target.value)} /></label>
           <label>CREF<input required inputMode="text" maxLength={15} placeholder="CREF 000000-G/PR" value={formatCref(profile.cref || '')} onChange={(event) => update('cref', formatCref(event.target.value))} /></label>

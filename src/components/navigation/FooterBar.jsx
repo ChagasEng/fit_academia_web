@@ -2,7 +2,7 @@ const icons = { home: '⌂', users: '♙', building: '▦', profile: '◉', acti
 
 export default function FooterBar({ items, onNavigate }) {
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/'
-  const profileSubpages = ['/personal/integracoes/telegram', '/personal/academias']
+  const profileSubpages = ['/personal/integracoes/telegram', '/personal/academias', '/personal/faturamento']
   const menuPath = profileSubpages.includes(currentPath) ? '/personal/perfil' : currentPath
   const activePath = items
     .filter((item) => menuPath === item.path || menuPath.startsWith(`${item.path}/`))

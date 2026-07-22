@@ -122,7 +122,7 @@ export async function deleteAppointment(token, id) {
 }
 
 export function getPersonalProfile(token) { return authorizedGet('/personal/profile', token) }
-export function getRevenue(token) { return authorizedGet('/personal/financeiro', token) }
+export function getFinance(token, month = '', signal) { return authorizedGet(`/personal/financeiro${month ? `?month=${month}` : ''}`, token, signal) }
 export function getStudentHistory(token, id) { return authorizedGet(`/personal/alunos/${id}/historico`, token) }
 export function createStudentWhatsappContact(token, id, tipo, appointmentId = null) {
   return request(`/personal/alunos/${id}/contatos`, {
@@ -133,7 +133,7 @@ export function createStudentWhatsappContact(token, id, tipo, appointmentId = nu
 }
 export function updateStudent(token, id, student) { return request(`/personal/alunos/${id}`, { method: 'PATCH', headers: authHeaders(token, true), body: JSON.stringify(student) }, 'Não foi possível atualizar o aluno.') }
 export function createContract(token, id, contract) { return request(`/personal/alunos/${id}/contratos`, { method: 'POST', headers: authHeaders(token, true), body: JSON.stringify(contract) }, 'Não foi possível salvar o plano.') }
-export function markInstallmentPaid(token, id) { return request(`/personal/parcelas/${id}/paga`, { method: 'PATCH', headers: authHeaders(token) }, 'Não foi possível registrar o pagamento.') }
+export function markInstallmentPaid(token, id, paymentMethod) { return request(`/personal/parcelas/${id}/paga`, { method: 'PATCH', headers: authHeaders(token, Boolean(paymentMethod)), ...(paymentMethod ? { body: JSON.stringify({ metodo_pagamento: paymentMethod }) } : {}) }, 'Não foi possível registrar o pagamento.') }
 export function createStudentNote(token, id, conteudo) { return request(`/personal/alunos/${id}/anotacoes`, { method: 'POST', headers: authHeaders(token, true), body: JSON.stringify({ conteudo }) }, 'Não foi possível salvar a observação.') }
 
 export async function updatePersonalProfile(token, profile) {
