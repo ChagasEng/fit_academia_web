@@ -2,7 +2,8 @@ const icons = { home: '⌂', users: '♙', building: '▦', profile: '◉', acti
 
 export default function FooterBar({ items, onNavigate }) {
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/'
-  const menuPath = currentPath === '/personal/integracoes/telegram' ? '/personal/perfil' : currentPath
+  const profileSubpages = ['/personal/integracoes/telegram', '/personal/academias']
+  const menuPath = profileSubpages.includes(currentPath) ? '/personal/perfil' : currentPath
   const activePath = items
     .filter((item) => menuPath === item.path || menuPath.startsWith(`${item.path}/`))
     .sort((first, second) => second.path.length - first.path.length)[0]?.path

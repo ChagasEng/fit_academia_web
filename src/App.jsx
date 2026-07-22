@@ -69,5 +69,9 @@ export default function App() {
   if (sessionRole === 'personal' && subscriptionBlocked) return <><ThemeToggle /><SubscriptionBlockedPage token={session.token} subscription={subscriptionBlocked} onReactivated={() => setSubscriptionBlocked(null)} onLogout={handleLogout} /></>
 
   const Page = pages[requestedRole]
-  return <><ThemeToggle /><Page path={path} user={session.user} token={session.token} onLogout={handleLogout} onNavigate={navigate} />{menu.length > 0 && <FooterBar items={menu} onNavigate={navigate} />}</>
+  const footerItems = sessionRole === 'personal'
+    ? menu.filter((item) => item.path !== '/personal/academias')
+    : menu
+
+  return <><ThemeToggle /><Page path={path} user={session.user} token={session.token} onLogout={handleLogout} onNavigate={navigate} />{footerItems.length > 0 && <FooterBar items={footerItems} onNavigate={navigate} />}</>
 }

@@ -102,11 +102,18 @@ export default function ProfilePage({ token, onLogout, onNavigate }) {
       <section className="registration-content">
         <p className="eyebrow">MEU PERFIL</p>
         <h1>Dados profissionais</h1>
-        <button type="button" className="profile-menu-item" onClick={() => onNavigate('/personal/integracoes/telegram')}>
-          <span className="profile-menu-icon" aria-hidden="true">▷</span>
-          <span><small>INTEGRAÇÕES</small><strong>Agenda pelo Telegram</strong><em>Conecte e configure seu bot de agendamentos.</em></span>
-          <b aria-hidden="true">›</b>
-        </button>
+        <div className="profile-menu-grid">
+          <button type="button" className="profile-menu-item" onClick={() => onNavigate('/personal/integracoes/telegram')}>
+            <span className="profile-menu-icon" aria-hidden="true">▷</span>
+            <span><small>INTEGRAÇÕES</small><strong>Agenda pelo Telegram</strong><em>Conecte e configure seu bot de agendamentos.</em></span>
+            <b aria-hidden="true">›</b>
+          </button>
+          <button type="button" className="profile-menu-item academy-profile-menu-item" onClick={() => onNavigate('/personal/academias')}>
+            <span className="profile-menu-icon" aria-hidden="true">⌖</span>
+            <span><small>LOCALIZAÇÃO</small><strong>Academias</strong><em>Consulte as academias cadastradas no mapa.</em></span>
+            <b aria-hidden="true">›</b>
+          </button>
+        </div>
         {revenue && (
           <div className="revenue-cards">
             <div><span>Recebido no mês</span><strong>{money(revenue.received_cents)}</strong></div>
