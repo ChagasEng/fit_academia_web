@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import AppointmentLocationFields from '../../components/appointments/AppointmentLocationFields'
 import AcademyPickerModal from '../../components/academies/AcademyPickerModal'
 import BackButton from '../../components/navigation/BackButton'
+import ChargeCreateSheet from '../../components/payments/ChargeCreateSheet'
 import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import {
-  createContract,
   createStudentNote,
   getStudentHistory,
   markInstallmentPaid,
@@ -12,34 +12,18 @@ import {
   updateStudent,
 } from '../../lib/api'
 import { appointmentLocationLabel, locationFromAppointment } from '../../lib/appointmentLocation'
-import { currencyToCents, formatCurrency } from '../../lib/masks'
 import { formatCalendarDate } from '../../lib/text'
 
 const money = (value = 0) => (Number(value || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-const today = () => {
-  const date = new Date()
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
 export default function StudentHistoryPage({ token, onLogout, studentId }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
-  const [saving, setSaving] = useState(false)
   const [savingLocation, setSavingLocation] = useState(false)
   const [note, setNote] = useState('')
   const [editingAppointment, setEditingAppointment] = useState(null)
   const [location, setLocation] = useState(null)
   const [showStudentAcademies, setShowStudentAcademies] = useState(false)
-  const [form, setForm] = useState({
-    titulo: 'Consultoria 2 meses',
-    valor: '',
-    parcelas: 1,
-    metodo_pagamento: 'pix',
-    treinos_inclusos: 2,
-    avaliacoes_inclusas: 1,
-    consultorias_inclusas: 1,
-    inicio_em: today(),
-  })
+  const [showCharge, setShowCharge] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -51,24 +35,6 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
   }, [token, studentId])
 
   useEffect(() => { load() }, [load])
-
-  async function savePlan(event) {
-    event.preventDefault()
-    const amountInCents = currencyToCents(form.valor)
-    if (!amountInCents) return setError('Informe um valor válido para o plano.')
-
-    try {
-      setSaving(true)
-      setError('')
-      await createContract(token, studentId, { ...form, valor_centavos: amountInCents })
-      setForm((current) => ({ ...current, valor: '' }))
-      await load()
-    } catch (requestError) {
-      setError(requestError.message)
-    } finally {
-      setSaving(false)
-    }
-  }
 
   function editAppointment(appointment) {
     setEditingAppointment(appointment.id)
@@ -168,48 +134,27 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
 
         {error && <p className="form-error">{error}</p>}
 
-        <div className="history-grid">
-          <section className="history-card">
-            <h2>Novo plano</h2>
-            <form onSubmit={savePlan}>
-              <label>Plano<input required value={form.titulo} onChange={(event) => setForm({ ...form, titulo: event.target.value })} /></label>
-              <div className="form-grid">
-                <label>Valor total<input required inputMode="decimal" placeholder="R$ 0,00" value={form.valor} onChange={(event) => setForm({ ...form, valor: formatCurrency(event.target.value) })} /></label>
-                <label>Parcelas<select value={form.parcelas} onChange={(event) => setForm({ ...form, parcelas: Number(event.target.value) })}>{[1, 2, 3, 4, 6, 12].map((number) => <option key={number} value={number}>{number}x</option>)}</select></label>
-                <label>Pagamento<select value={form.metodo_pagamento} onChange={(event) => setForm({ ...form, metodo_pagamento: event.target.value })}><option value="pix">Pix</option><option value="cartao">Cartão</option><option value="dinheiro">Dinheiro</option></select></label>
-                <label>Primeiro vencimento<input type="date" value={form.inicio_em} onChange={(event) => setForm({ ...form, inicio_em: event.target.value })} /></label>
+        <section className="history-card history-payments-card">
+          <div className="history-payments-heading"><div><span>FINANCEIRO</span><h2>Cobranças e pagamentos</h2></div><button type="button" onClick={() => setShowCharge(true)}>+ Nova cobrança</button></div>
+          {installments.length === 0 && <p>Nenhuma parcela cadastrada.</p>}
+          {installments.map((item) => (
+            <article className="payment-row" key={item.id}>
+              <div>
+                <strong>{item.contract.titulo} · {item.numero}ª parcela</strong>
+                <span>Vence {formatCalendarDate(item.vencimento_em)} · {item.metodo_pagamento}</span>
               </div>
-              <div className="form-grid">
-                <label>Treinos<input type="number" min="0" value={form.treinos_inclusos} onChange={(event) => setForm({ ...form, treinos_inclusos: Number(event.target.value) })} /></label>
-                <label>Avaliações<input type="number" min="0" value={form.avaliacoes_inclusas} onChange={(event) => setForm({ ...form, avaliacoes_inclusas: Number(event.target.value) })} /></label>
-                <label>Consultorias<input type="number" min="0" value={form.consultorias_inclusas} onChange={(event) => setForm({ ...form, consultorias_inclusas: Number(event.target.value) })} /></label>
-              </div>
-              <button disabled={saving}>{saving ? 'Salvando…' : 'Salvar plano'}</button>
-            </form>
-          </section>
-
-          <section className="history-card">
-            <h2>Pagamentos</h2>
-            {installments.length === 0 && <p>Nenhuma parcela cadastrada.</p>}
-            {installments.map((item) => (
-              <article className="payment-row" key={item.id}>
-                <div>
-                  <strong>{item.contract.titulo} · {item.numero}ª parcela</strong>
-                  <span>Vence {formatCalendarDate(item.vencimento_em)} · {item.metodo_pagamento}</span>
-                </div>
-                <b>{money(item.valor_centavos)}</b>
-                {item.pago_em ? (
-                  <em>Pago em {new Date(item.pago_em).toLocaleDateString('pt-BR')}</em>
-                ) : (
-                  <button onClick={async () => {
-                    try { await markInstallmentPaid(token, item.id); await load() }
-                    catch (requestError) { setError(requestError.message) }
-                  }}>Já pagou</button>
-                )}
-              </article>
-            ))}
-          </section>
-        </div>
+              <b>{money(item.valor_centavos)}</b>
+              {item.pago_em ? (
+                <em>Pago em {new Date(item.pago_em).toLocaleDateString('pt-BR')}</em>
+              ) : (
+                <button onClick={async () => {
+                  try { await markInstallmentPaid(token, item.id); await load() }
+                  catch (requestError) { setError(requestError.message) }
+                }}>Já pagou</button>
+              )}
+            </article>
+          ))}
+        </section>
 
         <section className="history-card">
           <h2>Observações e atendimentos</h2>
@@ -254,6 +199,7 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
           ))}
         </section>
         {showStudentAcademies && <AcademyPickerModal token={token} selectedId={data.student.academy?.id} onSelect={selectStudentAcademy} onClose={() => setShowStudentAcademies(false)} />}
+        {showCharge && <ChargeCreateSheet token={token} fixedStudent={data.student} onClose={() => setShowCharge(false)} onSaved={async () => { setShowCharge(false); await load() }} />}
       </section>
     </main>
   )

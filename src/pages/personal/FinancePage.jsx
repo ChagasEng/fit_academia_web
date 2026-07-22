@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import BackButton from '../../components/navigation/BackButton'
+import ChargeCreateSheet from '../../components/payments/ChargeCreateSheet'
 import StudentQuickSearch from '../../components/students/StudentQuickSearch'
 import { getFinance, markInstallmentPaid } from '../../lib/api'
 
@@ -10,6 +11,13 @@ const pageSize = 8
 function localMonth() {
   const today = new Date()
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+}
+
+function defaultChargeDate(month) {
+  const currentMonth = localMonth()
+  if (month !== currentMonth) return `${month}-01`
+  const today = new Date()
+  return `${currentMonth}-${String(today.getDate()).padStart(2, '0')}`
 }
 
 function shiftMonth(value, amount) {
@@ -53,12 +61,12 @@ export default function FinancePage({ token, onLogout, onNavigate }) {
   const [message, setMessage] = useState('')
   const [actionId, setActionId] = useState(null)
   const [refresh, setRefresh] = useState(0)
+  const [showCharge, setShowCharge] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
     setLoading(true)
     setError('')
-    setMessage('')
     setData((current) => current?.period?.month === month ? current : null)
     getFinance(token, month, controller.signal)
       .then(setData)
@@ -114,11 +122,13 @@ export default function FinancePage({ token, onLogout, onNavigate }) {
   }, [page, totalPages])
 
   function changeMonth(nextMonth) {
+    setMessage('')
     setMonth(nextMonth)
     setPage(1)
   }
 
   function selectScope(nextScope) {
+    setMessage('')
     setScope(nextScope)
     setStatus('all')
     setSearch('')
@@ -152,6 +162,19 @@ export default function FinancePage({ token, onLogout, onNavigate }) {
     }
   }
 
+  function chargeSaved({ student, dueDate, installments }) {
+    const dueMonth = dueDate.slice(0, 7)
+    setShowCharge(false)
+    setMonth(dueMonth)
+    setScope('month')
+    setStatus('all')
+    setMethod('all')
+    setSearch(student.nome || student.name || '')
+    setPage(1)
+    setMessage(`${installments > 1 ? `${installments} cobranças lançadas` : 'Cobrança lançada'} para ${student.nome || student.name}.`)
+    setRefresh((value) => value + 1)
+  }
+
   const summary = data?.summary || {}
   const overdue = data?.overdue || {}
 
@@ -165,10 +188,13 @@ export default function FinancePage({ token, onLogout, onNavigate }) {
       <section className="finance-content">
         <div className="finance-heading">
           <div><p className="eyebrow">CONTROLE FINANCEIRO</p><h1>Faturamento</h1><p>Veja com clareza o que entrou, o que ainda vence e quem precisa de atenção.</p></div>
-          <div className="finance-month-control">
-            <span>PERÍODO DE VENCIMENTO</span>
-            <div><button type="button" aria-label="Mês anterior" onClick={() => changeMonth(shiftMonth(month, -1))}>‹</button><input type="month" value={month} onChange={(event) => changeMonth(event.target.value || localMonth())} /><button type="button" aria-label="Próximo mês" onClick={() => changeMonth(shiftMonth(month, 1))}>›</button></div>
-            {month !== localMonth() && <button type="button" className="finance-current-month" onClick={() => changeMonth(localMonth())}>Voltar para o mês atual</button>}
+          <div className="finance-heading-actions">
+            <button type="button" className="finance-new-charge" onClick={() => setShowCharge(true)}><span aria-hidden="true">+</span><span><strong>Nova cobrança</strong><small>Lançar vencimento</small></span></button>
+            <div className="finance-month-control">
+              <span>PERÍODO DE VENCIMENTO</span>
+              <div><button type="button" aria-label="Mês anterior" onClick={() => changeMonth(shiftMonth(month, -1))}>‹</button><input type="month" value={month} onChange={(event) => changeMonth(event.target.value || localMonth())} /><button type="button" aria-label="Próximo mês" onClick={() => changeMonth(shiftMonth(month, 1))}>›</button></div>
+              {month !== localMonth() && <button type="button" className="finance-current-month" onClick={() => changeMonth(localMonth())}>Voltar para o mês atual</button>}
+            </div>
           </div>
         </div>
 
@@ -225,6 +251,7 @@ export default function FinancePage({ token, onLogout, onNavigate }) {
         {message && <p className="finance-feedback success" role="status">{message}</p>}
         {error && <p className="finance-feedback error" role="alert">{error}</p>}
       </section>
+      {showCharge && <ChargeCreateSheet token={token} defaultDueDate={defaultChargeDate(month)} onClose={() => setShowCharge(false)} onSaved={chargeSaved} />}
     </main>
   )
 }
