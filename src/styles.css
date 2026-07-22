@@ -1392,3 +1392,19 @@ small { color: #70807c; font-weight: 400; }
   .footer-bar { background: var(--theme-surface); }
   .charge-actions { background: var(--theme-surface); }
 }
+
+.history-loading > p:not(.eyebrow) { color: var(--theme-text-muted); }
+.history-loading-summary, .history-loading-grid > span { border: 1px solid var(--theme-border); border-radius: .85rem; background: linear-gradient(100deg, var(--theme-surface) 20%, var(--theme-surface-soft) 45%, var(--theme-surface) 70%); background-size: 220% 100%; animation: history-loading-pulse 1.2s ease-in-out infinite; }
+.history-loading-summary { height: 5rem; margin-top: 1.5rem; }
+.history-loading-grid { margin-top: 1rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.history-loading-grid > span { height: 11rem; }
+@keyframes history-loading-pulse { to { background-position: -220% 0; } }
+
+@media (max-width: 600px) {
+  .history-loading-grid { grid-template-columns: 1fr; }
+  .history-loading-grid > span { height: 7rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history-loading-summary, .history-loading-grid > span { animation: none; }
+}

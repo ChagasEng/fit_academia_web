@@ -48,8 +48,8 @@ export default function AcademiesPage({ token, onLogout }) {
     }
   }, [token])
 
-  function openHistory(studentId) {
-    window.history.pushState({}, '', `/personal/alunos/${studentId}/historico`)
+  function openHistory(student) {
+    window.history.pushState({ studentName: student.nome }, '', `/personal/alunos/${student.id}/historico`)
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
@@ -123,7 +123,7 @@ export default function AcademiesPage({ token, onLogout }) {
                   {(details.students || []).map((student) => {
                     const nextAppointment = student.appointments?.[0]
                     return (
-                      <button type="button" key={student.id} onClick={() => openHistory(student.id)}>
+                      <button type="button" key={student.id} onClick={() => openHistory(student)}>
                         <span className="student-avatar">{student.nome.slice(0, 1)}</span>
                         <span>
                           <strong>{student.nome}</strong>

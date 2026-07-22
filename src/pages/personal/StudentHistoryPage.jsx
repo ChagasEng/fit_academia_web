@@ -15,8 +15,16 @@ import { appointmentLocationLabel, locationFromAppointment } from '../../lib/app
 import { formatCalendarDate } from '../../lib/text'
 
 const money = (value = 0) => (Number(value || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+const historyCache = new Map()
+
+function cacheHistory(studentId, history) {
+  historyCache.delete(String(studentId))
+  historyCache.set(String(studentId), history)
+  if (historyCache.size > 20) historyCache.delete(historyCache.keys().next().value)
+}
+
 export default function StudentHistoryPage({ token, onLogout, studentId }) {
-  const [data, setData] = useState(null)
+  const [data, setData] = useState(() => historyCache.get(String(studentId)) || null)
   const [error, setError] = useState('')
   const [savingLocation, setSavingLocation] = useState(false)
   const [note, setNote] = useState('')
@@ -28,7 +36,9 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
   const load = useCallback(async () => {
     try {
       setError('')
-      setData(await getStudentHistory(token, studentId))
+      const history = await getStudentHistory(token, studentId)
+      cacheHistory(studentId, history)
+      setData(history)
     } catch (requestError) {
       setError(requestError.message)
     }
@@ -93,7 +103,19 @@ export default function StudentHistoryPage({ token, onLogout, studentId }) {
     )
   }
 
-  if (!data) return <main className="dashboard-page"><section className="registration-content"><p>Carregando histórico…</p></section></main>
+  if (!data) return <main className="dashboard-page registration-page">
+    <header className="dashboard-header">
+      <div className="header-side"><BackButton fallback="/personal/alunos" /><strong>fit<span>academia</span></strong></div>
+      <div className="header-actions"><StudentQuickSearch token={token} /><button onClick={onLogout}>Sair</button></div>
+    </header>
+    <section className="registration-content history-loading" aria-busy="true" aria-label="Carregando histórico do aluno">
+      <p className="eyebrow">HISTÓRICO DO ALUNO</p>
+      <h1>{window.history.state?.studentName || 'Histórico do aluno'}</h1>
+      <p>Buscando pagamentos, planos e atendimentos…</p>
+      <div className="history-loading-summary" />
+      <div className="history-loading-grid"><span /><span /></div>
+    </section>
+  </main>
 
   const contracts = Array.isArray(data.contracts) ? data.contracts : []
   const appointments = Array.isArray(data.appointments) ? data.appointments : []

@@ -63,7 +63,7 @@ export default function StudentDetailsSheet({ student, token, onClose, onUpdated
   }
 
   function openHistory() {
-    window.history.pushState({}, '', `/personal/alunos/${currentStudent.id}/historico`)
+    window.history.pushState({ studentName: currentStudent.nome }, '', `/personal/alunos/${currentStudent.id}/historico`)
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 

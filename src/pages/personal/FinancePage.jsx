@@ -141,9 +141,9 @@ export default function FinancePage({ token, onLogout, onNavigate }) {
     setPage(1)
   }
 
-  function viewStudent(studentId) {
+  function viewStudent(student) {
     const backTo = `${window.location.pathname}${window.location.search}`
-    onNavigate(`/personal/alunos/${studentId}/historico`, false, { backTo })
+    onNavigate(`/personal/alunos/${student.id}/historico`, false, { backTo, studentName: student.name })
   }
 
   async function pay(item) {
@@ -239,7 +239,7 @@ export default function FinancePage({ token, onLogout, onNavigate }) {
                 <div className="finance-student"><strong>{item.student.name}</strong><small>{item.student.email || 'Sem e-mail cadastrado'}</small></div>
                 <div className="finance-contract"><small>PLANO</small><strong>{item.contract.title}</strong><span>{item.installment_number}ª de {item.contract.installments_count} · {methodLabels[item.payment_method] || 'Não informado'}</span></div>
                 <div className="finance-due"><small>{item.status === 'paid' ? 'PAGO EM' : 'VENCIMENTO'}</small><strong>{date(item.status === 'paid' ? item.paid_at : item.due_date)}</strong><span className={`finance-status ${item.status}`}>{statusLabels[item.status]}</span></div>
-                <div className="finance-value"><strong>{money(item.amount_cents)}</strong>{item.status !== 'paid' && <button type="button" disabled={actionId === item.id} onClick={() => pay(item)}>{actionId === item.id ? 'Registrando…' : 'Marcar como pago'}</button>}<button type="button" className="finance-student-link" onClick={() => viewStudent(item.student.id)}>Ver aluno</button></div>
+                <div className="finance-value"><strong>{money(item.amount_cents)}</strong>{item.status !== 'paid' && <button type="button" disabled={actionId === item.id} onClick={() => pay(item)}>{actionId === item.id ? 'Registrando…' : 'Marcar como pago'}</button>}<button type="button" className="finance-student-link" onClick={() => viewStudent(item.student)}>Ver aluno</button></div>
               </article>)}
               {!loading && items.length === 0 && <div className="finance-empty"><span aria-hidden="true">✓</span><strong>Nenhuma cobrança encontrada</strong><p>{scope === 'overdue' ? 'Não há pendências acumuladas com estes filtros.' : 'Ajuste os filtros ou selecione outro mês.'}</p></div>}
             </div>
