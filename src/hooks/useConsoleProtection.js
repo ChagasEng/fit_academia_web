@@ -13,12 +13,24 @@ function canAccessConsole(session) {
 
 function isBlockedShortcut(event) {
   const key = event.key.toLowerCase()
+  const code = event.code
+  const isFunctionKey = /^F\d{1,2}$/.test(event.key) || /^F\d{1,2}$/.test(code)
+  const ctrlOrMeta = event.ctrlKey || event.metaKey
+
   return (
     event.key === 'F12' ||
-    (event.ctrlKey && event.shiftKey && ['i', 'j', 'c', 'k'].includes(key)) ||
-    (event.metaKey && event.altKey && ['i', 'j', 'c'].includes(key)) ||
-    (event.ctrlKey && ['u', 's'].includes(key)) ||
-    (event.metaKey && ['u', 's'].includes(key))
+    code === 'F12' ||
+    key === 'contextmenu' ||
+    code === 'ContextMenu' ||
+    (event.shiftKey && (event.key === 'F10' || code === 'F10')) ||
+    (event.shiftKey && ['F5', 'F7', 'F9'].includes(event.key)) ||
+    (event.shiftKey && ['F5', 'F7', 'F9'].includes(code)) ||
+    (ctrlOrMeta && event.shiftKey && ['i', 'j', 'c', 'k', 'e', 'z', 'm', 'p'].includes(key)) ||
+    (event.ctrlKey && event.altKey && event.shiftKey && key === 'i') ||
+    (event.metaKey && event.altKey && event.shiftKey && key === 'i') ||
+    (event.metaKey && event.altKey && ['i', 'j', 'c', 'k', 'e', 'm'].includes(key)) ||
+    (ctrlOrMeta && ['u', 's'].includes(key)) ||
+    (event.altKey && isFunctionKey)
   )
 }
 
